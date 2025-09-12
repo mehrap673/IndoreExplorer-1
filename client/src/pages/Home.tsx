@@ -38,6 +38,60 @@ const highlights = [
   },
 ];
 
+const testimonials = [
+  {
+    name: 'Priya Sharma',
+    location: 'Delhi',
+    text: 'Indore exceeded all my expectations! The food was incredible and the people were so welcoming.',
+    rating: 5,
+    avatar: 'https://images.unsplash.com/photo-1494790108755-2616c96a2ba8?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150'
+  },
+  {
+    name: 'Rajesh Kumar',
+    location: 'Mumbai',
+    text: 'The perfect blend of history and modernity. I loved exploring the palaces and trying street food.',
+    rating: 5,
+    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150'
+  },
+  {
+    name: 'Sarah Johnson',
+    location: 'London',
+    text: 'An amazing cultural experience! The festivals and local traditions were absolutely fascinating.',
+    rating: 5,
+    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150'
+  }
+];
+
+const cityStats = [
+  { number: '3M+', label: 'Population', description: 'Vibrant metropolitan city' },
+  { number: '500+', label: 'Years Old', description: 'Rich historical heritage' },
+  { number: '15+', label: 'Attractions', description: 'Must-visit destinations' },
+  { number: '200+', label: 'Food Items', description: 'Culinary diversity' }
+];
+
+const features = [
+  {
+    icon: '🍴',
+    title: 'Food Capital',
+    description: 'Known as the food capital of India with world-famous street food'
+  },
+  {
+    icon: '🏆',
+    title: 'Cleanest City',
+    description: 'Ranked as one of Indias cleanest cities for multiple years'
+  },
+  {
+    icon: '🎭',
+    title: 'Cultural Hub',
+    description: 'Rich cultural heritage with vibrant festivals and traditions'
+  },
+  {
+    icon: '🏭',
+    title: 'Commercial Center',
+    description: 'Major commercial and industrial hub of Madhya Pradesh'
+  }
+];
+
 export default function HomePage() {
   return (
     <Layout 
@@ -150,6 +204,146 @@ export default function HomePage() {
               />
             </motion.div>
           </div>
+        </div>
+      </section>
+
+      {/* City Statistics */}
+      <section className="py-20 bg-gradient-to-br from-primary to-primary/80">
+        <div className="container mx-auto px-4 lg:px-6">
+          <motion.div
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-4xl font-bold mb-4 text-primary-foreground">Indore by Numbers</h2>
+            <p className="text-primary-foreground/80 text-lg">Discover what makes our city special</p>
+          </motion.div>
+          
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+            {cityStats.map((stat, index) => (
+              <motion.div
+                key={stat.label}
+                className="text-center"
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                viewport={{ once: true }}
+              >
+                <div className="text-5xl font-bold text-primary-foreground mb-2">{stat.number}</div>
+                <div className="text-xl font-semibold text-primary-foreground mb-1">{stat.label}</div>
+                <div className="text-primary-foreground/70">{stat.description}</div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-20 bg-background">
+        <div className="container mx-auto px-4 lg:px-6">
+          <motion.div
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-4xl font-bold mb-4">What Makes Indore Special</h2>
+            <p className="text-muted-foreground text-lg">Discover the unique characteristics of our beloved city</p>
+          </motion.div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {features.map((feature, index) => (
+              <motion.div
+                key={feature.title}
+                className="text-center p-6 bg-card rounded-lg border border-border card-hover"
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                viewport={{ once: true }}
+              >
+                <div className="text-4xl mb-4">{feature.icon}</div>
+                <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
+                <p className="text-muted-foreground">{feature.description}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="py-20 bg-secondary">
+        <div className="container mx-auto px-4 lg:px-6">
+          <motion.div
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-4xl font-bold mb-4 text-secondary-foreground">What Visitors Say</h2>
+            <p className="text-secondary-foreground/80 text-lg">Hear from travelers who fell in love with Indore</p>
+          </motion.div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {testimonials.map((testimonial, index) => (
+              <motion.div
+                key={testimonial.name}
+                className="bg-background p-6 rounded-lg border border-border card-hover"
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                viewport={{ once: true }}
+              >
+                <div className="flex items-center mb-4">
+                  <img
+                    src={testimonial.avatar}
+                    alt={testimonial.name}
+                    className="w-12 h-12 rounded-full mr-4"
+                  />
+                  <div>
+                    <h4 className="font-semibold">{testimonial.name}</h4>
+                    <p className="text-muted-foreground text-sm">{testimonial.location}</p>
+                  </div>
+                </div>
+                <div className="flex mb-4">
+                  {[...Array(testimonial.rating)].map((_, i) => (
+                    <span key={i} className="text-primary text-lg">⭐</span>
+                  ))}
+                </div>
+                <p className="text-foreground italic">"{testimonial.text}"</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Newsletter Section */}
+      <section className="py-20 bg-accent">
+        <div className="container mx-auto px-4 lg:px-6 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-4xl font-bold mb-6 text-accent-foreground">Stay Updated</h2>
+            <p className="text-accent-foreground/80 text-lg mb-8 max-w-2xl mx-auto">
+              Get the latest news about events, festivals, and new attractions in Indore.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
+              <input
+                type="email"
+                placeholder="Enter your email"
+                className="flex-1 px-4 py-3 rounded-lg border border-border bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent"
+              />
+              <button className="bg-primary text-primary-foreground px-6 py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors">
+                Subscribe
+              </button>
+            </div>
+          </motion.div>
         </div>
       </section>
 
