@@ -1,0 +1,130 @@
+Build a full-featured, multi-page responsive website called “All About Indore” using Next.js (App Router, TypeScript), React, TailwindCSS, and Framer Motion. The project should be production-ready, mobile-first, SEO-optimized, and deployable on Vercel.
+
+🎨 Design Instructions
+
+Landing/Home Page: Must copy the design exactly from the provided reference image (layout, typography, colors, spacing, button shapes, and hero section).
+
+Other Pages: Should not copy the image directly, but instead follow the same design language (color palette, button style, typography scale, spacing, card design, and overall aesthetic).
+
+Style: Minimal, modern, clean, responsive.
+
+Animations: Smooth page transitions, hover effects, fade/slide animations using Framer Motion.
+
+Support dark mode.
+
+🌐 Global Features
+
+Sticky navigation bar with links to all sections.
+
+Footer with quick links, social icons, copyright.
+
+Global search bar for content.
+
+SEO-ready: meta tags, sitemap.xml, robots.txt, Open Graph tags.
+
+PWA support: installable on devices.
+
+Reusable UI components: cards, buttons, modals.
+
+📄 Pages & Features
+1. Landing Page (/)
+
+Copy design from reference image.
+
+Hero banner with Indore background + tagline.
+
+Quick highlights of Places, Food, Events, Weather.
+
+Call-to-action buttons: “Explore More”, “Plan Your Trip”.
+
+2. Places to Visit (/places)
+
+Grid of attractions (Rajwada, Lal Bagh Palace, Sarafa Bazaar, etc.).
+
+Each card: image, description, Google Maps link.
+
+Filter or category selection.
+
+3. Food & Cuisine (/food)
+
+Showcase Indore’s food culture.
+
+Street food (Poha, Jalebi, Sarafa snacks) + restaurants.
+
+Cards with images, descriptions, category filter.
+
+4. Events & Festivals (/events)
+
+Calendar + upcoming festivals (Rangpanchami, Ahilya Utsav, Ganesh Chaturthi, etc.).
+
+Event cards with images, dates, and details.
+
+5. News (/news)
+
+Live news feed for Indore.
+
+Categories: City Updates, Culture, Travel.
+
+API: NewsAPI / Google RSS integration.
+
+6. Weather (/weather)
+
+Live weather from OpenWeatherMap API.
+
+Show temperature, humidity, forecast.
+
+Minimal card-based layout.
+
+7. Gallery (/gallery)
+
+Masonry/grid gallery of Indore images.
+
+Lightbox modal on click.
+
+Categories: Historical, Food, Events.
+
+8. About & History (/about)
+
+Timeline of Indore’s history.
+
+Content from Wikipedia API.
+
+Card layout for major historical milestones.
+
+9. Contact & Feedback (/contact)
+
+Contact form (Name, Email, Message).
+
+Integration via Formspree or Nodemailer.
+
+Social media links.
+
+🔧 Tech & APIs
+
+Frontend: Next.js (TypeScript), React, TailwindCSS.
+
+Animations: Framer Motion.
+
+API Integrations:
+
+Weather → OpenWeatherMap API.
+
+News → NewsAPI / RSS.
+
+History → Wikipedia API.
+
+Forms → Formspree / Nodemailer.
+
+Deployment: Vercel.
+
+⚡ Final Requirements
+
+Clean, modular codebase with reusable components.
+
+Multi-page routing (not SPA).
+
+Mobile-first, fully responsive.
+
+Use Tailwind utility classes consistently.
+
+All pages should match Landing Page’s style from reference image for a uniform look.
