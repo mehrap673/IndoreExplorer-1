@@ -92,6 +92,69 @@ const features = [
   }
 ];
 
+const services = [
+  {
+    title: 'Guided Tours',
+    description: 'Professional local guides who know every corner of Indore',
+    image: 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&h=300',
+    features: ['Historical insights', 'Local stories', 'Hidden gems']
+  },
+  {
+    title: 'Food Tours',
+    description: 'Taste the authentic flavors of Indore with our culinary experts',
+    image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&h=300',
+    features: ['Street food tours', 'Traditional restaurants', 'Cooking classes']
+  },
+  {
+    title: 'Cultural Events',
+    description: 'Experience festivals and cultural celebrations throughout the year',
+    image: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&h=300',
+    features: ['Festival participation', 'Traditional shows', 'Art exhibitions']
+  }
+];
+
+const galleryImages = [
+  'https://images.unsplash.com/photo-1570168007204-dfb528c6958f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600',
+  'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600',
+  'https://images.unsplash.com/photo-1626132647523-66f5bf380027?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600',
+  'https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600',
+  'https://images.unsplash.com/photo-1609920658906-8223bd289001?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600',
+  'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600',
+  'https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600',
+  'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600'
+];
+
+const attractions = [
+  {
+    name: 'Rajwada Palace',
+    description: 'Historic palace of the Holkar dynasty with stunning architecture',
+    image: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250',
+    rating: 4.8,
+    category: 'Historical'
+  },
+  {
+    name: 'Sarafa Bazaar',
+    description: 'Famous night food market with incredible street food variety',
+    image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250',
+    rating: 4.9,
+    category: 'Food'
+  },
+  {
+    name: 'Lal Bagh Palace',
+    description: 'Opulent palace showcasing European architectural influence',
+    image: 'https://images.unsplash.com/photo-1609920658906-8223bd289001?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250',
+    rating: 4.7,
+    category: 'Historical'
+  },
+  {
+    name: 'Patalpani Waterfall',
+    description: 'Scenic waterfall perfect for nature lovers and photographers',
+    image: 'https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250',
+    rating: 4.6,
+    category: 'Nature'
+  }
+];
+
 export default function HomePage() {
   return (
     <Layout 
@@ -132,6 +195,9 @@ export default function HomePage() {
                       src={item.imageUrl}
                       alt={item.title}
                       className="object-cover w-full h-full"
+                      loading="lazy"
+                      width="400"
+                      height="250"
                     />
                   </div>
                   <div className="flex items-center mb-3">
@@ -302,6 +368,9 @@ export default function HomePage() {
                     src={testimonial.avatar}
                     alt={testimonial.name}
                     className="w-12 h-12 rounded-full mr-4"
+                    loading="lazy"
+                    width="48"
+                    height="48"
                   />
                   <div>
                     <h4 className="font-semibold">{testimonial.name}</h4>
@@ -320,8 +389,225 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Services Section */}
+      <section className="py-20 bg-card">
+        <div className="container mx-auto px-4 lg:px-6">
+          <motion.div
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-4xl font-bold mb-4">Our Services</h2>
+            <p className="text-muted-foreground text-lg">Comprehensive tourism services to make your visit unforgettable</p>
+          </motion.div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {services.map((service, index) => (
+              <motion.div
+                key={service.title}
+                className="bg-background rounded-lg overflow-hidden border border-border card-hover"
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.2 }}
+                viewport={{ once: true }}
+              >
+                <img
+                  src={service.image}
+                  alt={service.title}
+                  className="w-full h-48 object-cover"
+                  loading="lazy"
+                  width="500"
+                  height="300"
+                />
+                <div className="p-6">
+                  <h3 className="text-xl font-semibold mb-3">{service.title}</h3>
+                  <p className="text-muted-foreground mb-4">{service.description}</p>
+                  <ul className="space-y-2">
+                    {service.features.map((feature, idx) => (
+                      <li key={idx} className="flex items-center text-sm">
+                        <span className="w-2 h-2 bg-primary rounded-full mr-3"></span>
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Top Attractions */}
+      <section className="py-20 bg-background">
+        <div className="container mx-auto px-4 lg:px-6">
+          <motion.div
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-4xl font-bold mb-4">Must-Visit Attractions</h2>
+            <p className="text-muted-foreground text-lg">Discover the most popular destinations in Indore</p>
+          </motion.div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {attractions.map((attraction, index) => (
+              <motion.div
+                key={attraction.name}
+                className="bg-card rounded-lg overflow-hidden border border-border card-hover"
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                viewport={{ once: true }}
+              >
+                <div className="relative">
+                  <img
+                    src={attraction.image}
+                    alt={attraction.name}
+                    className="w-full h-40 object-cover"
+                    loading="lazy"
+                    width="400"
+                    height="250"
+                  />
+                  <div className="absolute top-3 left-3 bg-primary text-primary-foreground px-2 py-1 rounded text-xs font-semibold">
+                    {attraction.category}
+                  </div>
+                  <div className="absolute top-3 right-3 bg-background/90 px-2 py-1 rounded text-xs font-semibold flex items-center">
+                    ⭐ {attraction.rating}
+                  </div>
+                </div>
+                <div className="p-4">
+                  <h3 className="font-semibold mb-2">{attraction.name}</h3>
+                  <p className="text-muted-foreground text-sm">{attraction.description}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Gallery Section */}
+      <section className="py-20 bg-secondary">
+        <div className="container mx-auto px-4 lg:px-6">
+          <motion.div
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-4xl font-bold mb-4 text-secondary-foreground">Photo Gallery</h2>
+            <p className="text-secondary-foreground/80 text-lg">Glimpse the beauty of Indore through stunning visuals</p>
+          </motion.div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {galleryImages.map((image, index) => (
+              <motion.div
+                key={index}
+                className="relative group overflow-hidden rounded-lg"
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                viewport={{ once: true }}
+                whileHover={{ scale: 1.05 }}
+              >
+                <img
+                  src={image}
+                  alt={`Gallery image ${index + 1}`}
+                  className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-110"
+                  loading="lazy"
+                  width="800"
+                  height="600"
+                />
+                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </motion.div>
+            ))}
+          </div>
+          
+          <div className="text-center mt-12">
+            <Link
+              href="/gallery"
+              className="bg-primary text-primary-foreground px-8 py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors inline-block"
+            >
+              View Full Gallery
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Food Specialties Section */}
+      <section className="py-20 bg-gradient-to-r from-accent to-accent/80">
+        <div className="container mx-auto px-4 lg:px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+            >
+              <h2 className="text-4xl font-bold mb-6 text-accent-foreground">Famous Food Delicacies</h2>
+              <p className="text-accent-foreground/80 text-lg mb-8">
+                Indore is celebrated as the food capital of India, offering an incredible variety of street food and traditional dishes that will tantalize your taste buds.
+              </p>
+              <div className="grid grid-cols-2 gap-6">
+                <div className="text-center">
+                  <div className="text-3xl mb-2">🥘</div>
+                  <h4 className="font-semibold text-accent-foreground">Poha-Jalebi</h4>
+                  <p className="text-accent-foreground/70 text-sm">Breakfast combo</p>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl mb-2">🍛</div>
+                  <h4 className="font-semibold text-accent-foreground">Dal Bafla</h4>
+                  <p className="text-accent-foreground/70 text-sm">Traditional meal</p>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl mb-2">🥙</div>
+                  <h4 className="font-semibold text-accent-foreground">Garadu</h4>
+                  <p className="text-accent-foreground/70 text-sm">Street snack</p>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl mb-2">🧁</div>
+                  <h4 className="font-semibold text-accent-foreground">Malpua</h4>
+                  <p className="text-accent-foreground/70 text-sm">Sweet dessert</p>
+                </div>
+              </div>
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="relative"
+            >
+              <div className="grid grid-cols-2 gap-4">
+                <img
+                  src="https://images.unsplash.com/photo-1626132647523-66f5bf380027?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=200"
+                  alt="Indori food"
+                  className="rounded-lg shadow-lg"
+                  loading="lazy"
+                  width="300"
+                  height="200"
+                />
+                <img
+                  src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=200"
+                  alt="Street food"
+                  className="rounded-lg shadow-lg mt-8"
+                  loading="lazy"
+                  width="300"
+                  height="200"
+                />
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       {/* Newsletter Section */}
-      <section className="py-20 bg-accent">
+      <section className="py-20 bg-card">
         <div className="container mx-auto px-4 lg:px-6 text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -329,8 +615,8 @@ export default function HomePage() {
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-4xl font-bold mb-6 text-accent-foreground">Stay Updated</h2>
-            <p className="text-accent-foreground/80 text-lg mb-8 max-w-2xl mx-auto">
+            <h2 className="text-4xl font-bold mb-6">Stay Updated</h2>
+            <p className="text-muted-foreground text-lg mb-8 max-w-2xl mx-auto">
               Get the latest news about events, festivals, and new attractions in Indore.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
@@ -344,6 +630,46 @@ export default function HomePage() {
               </button>
             </div>
           </motion.div>
+        </div>
+      </section>
+
+      {/* Travel Tips Section */}
+      <section className="py-20 bg-background">
+        <div className="container mx-auto px-4 lg:px-6">
+          <motion.div
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-4xl font-bold mb-4">Travel Tips</h2>
+            <p className="text-muted-foreground text-lg">Essential information for your perfect Indore experience</p>
+          </motion.div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[
+              { icon: '🚗', title: 'Getting Around', tip: 'Auto-rickshaws and city buses are the most convenient ways to travel within the city.' },
+              { icon: '🕐', title: 'Best Time to Visit', tip: 'October to March offers pleasant weather perfect for sightseeing and outdoor activities.' },
+              { icon: '💰', title: 'Budget Friendly', tip: 'Street food starts from ₹20, and most attractions have very reasonable entry fees.' },
+              { icon: '🗣️', title: 'Local Language', tip: 'Hindi and Marathi are widely spoken, but English is understood in tourist areas.' },
+              { icon: '📱', title: 'Stay Connected', tip: 'Free WiFi is available in most hotels and many restaurants and cafes.' },
+              { icon: '🛡️', title: 'Safety Tips', tip: 'Indore is generally safe, but keep valuables secure and avoid isolated areas at night.' }
+            ].map((tip, index) => (
+              <motion.div
+                key={tip.title}
+                className="bg-card p-6 rounded-lg border border-border card-hover"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                viewport={{ once: true }}
+              >
+                <div className="text-3xl mb-4">{tip.icon}</div>
+                <h3 className="text-lg font-semibold mb-3">{tip.title}</h3>
+                <p className="text-muted-foreground">{tip.tip}</p>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
