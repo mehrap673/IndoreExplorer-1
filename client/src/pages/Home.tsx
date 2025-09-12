@@ -1,0 +1,190 @@
+import { motion } from 'framer-motion';
+import { Link } from 'wouter';
+import Hero from '@/components/ui/hero';
+import Layout from '@/components/Layout';
+
+const highlights = [
+  {
+    title: 'Historical Places',
+    description: 'Explore magnificent palaces, ancient temples, and architectural marvels',
+    imageUrl: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250',
+    href: '/places',
+    icon: '🏛️',
+    stats: '15+ Attractions'
+  },
+  {
+    title: 'Food & Cuisine',
+    description: 'Savor authentic Indori flavors from famous poha-jalebi to diverse street food delights',
+    imageUrl: 'https://images.unsplash.com/photo-1626132647523-66f5bf380027?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250',
+    href: '/food',
+    icon: '🍽️',
+    stats: '200+ Dishes'
+  },
+  {
+    title: 'Events & Festivals',
+    description: 'Join vibrant celebrations and cultural events that bring the city to life throughout the year',
+    imageUrl: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250',
+    href: '/events',
+    icon: '🎉',
+    stats: '50+ Events'
+  },
+  {
+    title: 'Weather',
+    description: 'Stay updated with real-time weather conditions and plan your perfect visit to Indore',
+    imageUrl: 'https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250',
+    href: '/weather',
+    icon: '🌤️',
+    stats: 'Live Updates'
+  },
+];
+
+export default function HomePage() {
+  return (
+    <Layout 
+      title="All About Indore - Discover the Heart of Madhya Pradesh"
+      description="Explore Indore's rich culture, delicious cuisine, historical places, and vibrant events. Your complete guide to the Heart of Madhya Pradesh."
+    >
+      <Hero />
+      
+      {/* Quick Highlights */}
+      <section className="py-20 bg-card">
+        <div className="container mx-auto px-4 lg:px-6">
+          <motion.div
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-4xl font-bold mb-4">Discover Indore</h2>
+            <p className="text-muted-foreground text-lg">Experience the best of what our city has to offer</p>
+          </motion.div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {highlights.map((item, index) => (
+              <motion.div
+                key={item.title}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                viewport={{ once: true }}
+                whileHover={{ y: -8 }}
+                className="bg-background border border-border rounded-lg p-6 card-hover cursor-pointer"
+                data-testid={`card-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
+              >
+                <Link href={item.href}>
+                  <div className="relative h-40 mb-4 rounded-lg overflow-hidden">
+                    <img
+                      src={item.imageUrl}
+                      alt={item.title}
+                      className="object-cover w-full h-full"
+                    />
+                  </div>
+                  <div className="flex items-center mb-3">
+                    <span className="text-xl mr-3">{item.icon}</span>
+                    <h3 className="text-xl font-semibold">{item.title}</h3>
+                  </div>
+                  <p className="text-muted-foreground mb-4">{item.description}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-primary font-semibold">{item.stats}</span>
+                    <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Section */}
+      <section className="py-20 bg-secondary">
+        <div className="container mx-auto px-4 lg:px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+            >
+              <h2 className="text-4xl font-bold mb-6 text-foreground">Why Visit Indore?</h2>
+              <p className="text-muted-foreground text-lg mb-8">
+                Indore, the largest city in Madhya Pradesh, is a perfect blend of historical significance and modern development. Known as the commercial capital of the state, it offers visitors a unique experience with its rich culture, delicious food, and warm hospitality.
+              </p>
+              <div className="space-y-4">
+                {[
+                  'Rich historical heritage and architecture',
+                  'World-famous street food culture',
+                  'Vibrant festivals and cultural events',
+                  'Modern shopping and entertainment'
+                ].map((feature, index) => (
+                  <motion.div
+                    key={feature}
+                    className="flex items-center"
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.6, delay: index * 0.1 }}
+                    viewport={{ once: true }}
+                  >
+                    <svg className="w-5 h-5 text-primary mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-foreground">{feature}</span>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="relative"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1609920658906-8223bd289001?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+                alt="Indore architectural beauty"
+                className="rounded-lg shadow-2xl w-full"
+              />
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Call to Action */}
+      <section className="py-20 bg-primary">
+        <div className="container mx-auto px-4 lg:px-6 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-4xl font-bold mb-6 text-primary-foreground">Start Your Journey Today</h2>
+            <p className="text-primary-foreground/80 text-lg mb-8 max-w-2xl mx-auto">
+              Whether you're planning a short visit or an extended stay, Indore has something special waiting for you.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                href="/places"
+                className="bg-background text-primary px-8 py-4 rounded-lg text-lg font-semibold hover:bg-background/90 transition-colors"
+                data-testid="button-explore-places"
+              >
+                Explore Places
+              </Link>
+              <Link
+                href="/food"
+                className="bg-transparent border-2 border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary px-8 py-4 rounded-lg text-lg font-semibold transition-colors"
+                data-testid="button-discover-food"
+              >
+                Discover Food
+              </Link>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+    </Layout>
+  );
+}
