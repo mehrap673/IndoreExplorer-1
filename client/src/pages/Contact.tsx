@@ -1,7 +1,16 @@
-import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
+import { contactMessageValidation, type ContactFormData } from '@/lib/validation';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import Layout from '@/components/Layout';
+
 
 const emergencyContacts = [
   { service: 'Police', number: '100', icon: '🚔' },
@@ -30,67 +39,54 @@ const faqs = [
 ];
 
 export default function ContactPage() {
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    subject: '',
-    message: ''
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  
+  const form = useForm<ContactFormData>({
+    resolver: zodResolver(contactMessageValidation),
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      email: '',
+      subject: '',
+      message: ''
+    }
+  });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
+  const contactMutation = useMutation({
+    mutationFn: async (data: ContactFormData) => {
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(data),
       });
 
-      const result = await response.json();
-
-      if (response.ok) {
-        toast({
-          title: "Message sent successfully!",
-          description: "We'll get back to you as soon as possible.",
-        });
-        setFormData({
-          firstName: '',
-          lastName: '',
-          email: '',
-          subject: '',
-          message: ''
-        });
-      } else {
-        toast({
-          title: "Error sending message",
-          description: result.error || "Please try again later.",
-          variant: "destructive",
-        });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to send message');
       }
-    } catch (error) {
+
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Message sent successfully!",
+        description: "We'll get back to you as soon as possible.",
+      });
+      form.reset();
+    },
+    onError: (error: Error) => {
       toast({
         title: "Error sending message",
-        description: "Please check your connection and try again.",
+        description: error.message || "Please check your connection and try again.",
         variant: "destructive",
       });
-    } finally {
-      setIsSubmitting(false);
-    }
+    },
+  });
+
+  const handleSubmit = (data: ContactFormData) => {
+    contactMutation.mutate(data);
   };
 
   return (
@@ -120,107 +116,75 @@ export default function ContactPage() {
               transition={{ duration: 0.8 }}
             >
               <h2 className="text-2xl font-bold mb-6">Send us a Message</h2>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="firstName" className="block text-sm font-medium mb-2">
-                      First Name
-                    </label>
-                    <input
-                      type="text"
-                      id="firstName"
-                      name="firstName"
-                      value={formData.firstName}
-                      onChange={handleInputChange}
-                      required
-                      data-testid="input-first-name"
-                      className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-background"
-                      placeholder="Your first name"
-                    />
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField name="firstName" control={form.control} render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>First Name</FormLabel>
+                        <FormControl>
+                          <Input data-testid="input-first-name" placeholder="Your first name" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                    <FormField name="lastName" control={form.control} render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Last Name</FormLabel>
+                        <FormControl>
+                          <Input data-testid="input-last-name" placeholder="Your last name" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
                   </div>
-                  <div>
-                    <label htmlFor="lastName" className="block text-sm font-medium mb-2">
-                      Last Name
-                    </label>
-                    <input
-                      type="text"
-                      id="lastName"
-                      name="lastName"
-                      value={formData.lastName}
-                      onChange={handleInputChange}
-                      required
-                      data-testid="input-last-name"
-                      className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-background"
-                      placeholder="Your last name"
-                    />
-                  </div>
-                </div>
 
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium mb-2">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    required
-                    data-testid="input-email"
-                    className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-background"
-                    placeholder="your.email@example.com"
-                  />
-                </div>
+                  <FormField name="email" control={form.control} render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email Address</FormLabel>
+                      <FormControl>
+                        <Input type="email" data-testid="input-email" placeholder="your.email@example.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
 
-                <div>
-                  <label htmlFor="subject" className="block text-sm font-medium mb-2">
-                    Subject
-                  </label>
-                  <select
-                    id="subject"
-                    name="subject"
-                    value={formData.subject}
-                    onChange={handleInputChange}
-                    required
-                    data-testid="select-subject"
-                    className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-background"
-                  >
-                    <option value="">Select a subject</option>
-                    <option value="tourism">Tourism Information</option>
-                    <option value="travel">Travel Assistance</option>
-                    <option value="feedback">Feedback</option>
-                    <option value="business">Business Inquiry</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
+                  <FormField name="subject" control={form.control} render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Subject</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-subject">
+                            <SelectValue placeholder="Select a subject" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="tourism">Tourism Information</SelectItem>
+                          <SelectItem value="travel">Travel Assistance</SelectItem>
+                          <SelectItem value="feedback">Feedback</SelectItem>
+                          <SelectItem value="business">Business Inquiry</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
 
-                <div>
-                  <label htmlFor="message" className="block text-sm font-medium mb-2">
-                    Message
-                  </label>
-                  <textarea
-                    id="message"
-                    name="message"
-                    value={formData.message}
-                    onChange={handleInputChange}
-                    required
-                    rows={6}
-                    data-testid="textarea-message"
-                    className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-background resize-none"
-                    placeholder="Tell us how we can help you..."
-                  />
-                </div>
+                  <FormField name="message" control={form.control} render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Message</FormLabel>
+                      <FormControl>
+                        <Textarea rows={6} data-testid="textarea-message" placeholder="Tell us how we can help you..." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
 
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  data-testid="button-submit"
-                  className="w-full bg-primary text-primary-foreground py-3 px-6 rounded-lg font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isSubmitting ? 'Sending...' : 'Send Message'}
-                </button>
-              </form>
+                  <Button type="submit" data-testid="button-submit" disabled={contactMutation.isPending} className="w-full">
+                    {contactMutation.isPending ? 'Sending...' : 'Send Message'}
+                  </Button>
+                </form>
+              </Form>
             </motion.div>
 
             {/* Contact Information */}

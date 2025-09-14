@@ -1,7 +1,24 @@
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import Layout from '@/components/Layout';
 
-const events = [
+interface Event {
+  _id: string;
+  name: string;
+  description: string;
+  date: Date | string;
+  endDate?: Date;
+  category: 'cultural' | 'religious' | 'festival' | 'food' | 'music';
+  imageUrl: string;
+  location: string;
+  price?: string;
+  organizer?: string;
+  featured: boolean;
+  isActive: boolean;
+}
+
+const staticEvents = [
   {
     id: 1,
     name: 'Rangpanchami Festival',
@@ -52,6 +69,45 @@ const eventCategories = [
 ];
 
 export default function EventsPage() {
+  // Fetch events from MongoDB API
+  const { data: events = [], isLoading, error } = useQuery<Event[]>({
+    queryKey: ['/api/events']
+  });
+
+  if (isLoading) {
+    return (
+      <Layout 
+        title="Events & Festivals in Indore - Cultural Calendar & Celebrations"
+        description="Discover upcoming events and festivals in Indore including cultural celebrations, religious festivals, food events, and entertainment programs."
+      >
+        <div className="py-20">
+          <div className="container mx-auto px-4 lg:px-6">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-lg">Loading events...</p>
+            </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error) {
+    return (
+      <Layout 
+        title="Events & Festivals in Indore - Cultural Calendar & Celebrations"
+        description="Discover upcoming events and festivals in Indore including cultural celebrations, religious festivals, food events, and entertainment programs."
+      >
+        <div className="py-20">
+          <div className="container mx-auto px-4 lg:px-6">
+            <div className="text-center">
+              <p className="text-lg text-destructive">Failed to load events. Please try again later.</p>
+            </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
   const getCategoryIcon = (category: string) => {
     const icons: Record<string, string> = {
       'festival': '🎉',
@@ -127,13 +183,13 @@ export default function EventsPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {events.map((event, index) => (
                 <motion.div
-                  key={event.id}
+                  key={event._id}
                   className="bg-card border border-border rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300"
                   initial={{ opacity: 0, y: 50 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.8 + index * 0.1 }}
                   whileHover={{ y: -4 }}
-                  data-testid={`event-${event.id}`}
+                  data-testid={`event-${event._id}`}
                 >
                   <div className="md:flex">
                     <div className="md:w-1/3 relative">
@@ -149,10 +205,10 @@ export default function EventsPage() {
                       </div>
                     </div>
                     <div className="md:w-2/3 p-6">
-                      <h3 className="text-xl font-bold mb-3" data-testid={`event-name-${event.id}`}>
+                      <h3 className="text-xl font-bold mb-3" data-testid={`event-name-${event._id}`}>
                         {event.name}
                       </h3>
-                      <p className="text-muted-foreground mb-4 line-clamp-3" data-testid={`event-description-${event.id}`}>
+                      <p className="text-muted-foreground mb-4 line-clamp-3" data-testid={`event-description-${event._id}`}>
                         {event.description}
                       </p>
                       <div className="space-y-2 text-sm">
@@ -160,23 +216,23 @@ export default function EventsPage() {
                           <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                           </svg>
-                          <span data-testid={`event-date-${event.id}`}>{event.date}</span>
+                          <span data-testid={`event-date-${event._id}`}>{new Date(event.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                           </svg>
-                          <span data-testid={`event-location-${event.id}`}>{event.location}</span>
+                          <span data-testid={`event-location-${event._id}`}>{event.location}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                           </svg>
-                          <span className="font-semibold text-primary" data-testid={`event-price-${event.id}`}>{event.price}</span>
+                          <span className="font-semibold text-primary" data-testid={`event-price-${event._id}`}>{event.price || 'Free'}</span>
                         </div>
                       </div>
-                      <button className="mt-4 text-primary hover:text-primary/80 font-medium transition-colors flex items-center gap-1" data-testid={`event-details-${event.id}`}>
+                      <button className="mt-4 text-primary hover:text-primary/80 font-medium transition-colors flex items-center gap-1" data-testid={`event-details-${event._id}`}>
                         Event Details
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

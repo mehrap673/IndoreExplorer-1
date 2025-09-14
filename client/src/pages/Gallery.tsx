@@ -1,8 +1,23 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X } from 'lucide-react';
 import Layout from '@/components/Layout';
 
-const galleryImages = [
+interface GalleryItem {
+  _id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  category: string;
+  photographer?: string;
+  location?: string;
+  tags: string[];
+  featured: boolean;
+  isActive: boolean;
+}
+
+const staticGalleryImages = [
   {
     id: 1,
     src: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=500',
@@ -77,22 +92,86 @@ const galleryImages = [
   }
 ];
 
-const categories = ['all', 'historical', 'food', 'events', 'nature'];
-
 export default function GalleryPage() {
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedImage, setSelectedImage] = useState<number | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const filteredImages = selectedCategory === 'all' 
-    ? galleryImages 
-    : galleryImages.filter(image => image.category === selectedCategory);
+  // Fetch gallery items from MongoDB API
+  const { data: galleryImages = [], isLoading, error } = useQuery<GalleryItem[]>({
+    queryKey: ['/api/gallery'],
+    initialData: staticGalleryImages.map(img => ({
+      _id: img.id.toString(),
+      title: img.alt,
+      description: `Beautiful ${img.category} photography from Indore`,
+      imageUrl: img.src,
+      category: img.category,
+      photographer: 'Unknown',
+      location: 'Indore',
+      tags: [img.category],
+      featured: true,
+      isActive: true
+    })) as GalleryItem[]
+  });
+
+  // Derive categories dynamically from data
+  const categories = useMemo(() => {
+    const uniqueCategories = Array.from(new Set(galleryImages.map(img => img.category)));
+    return ['all', ...uniqueCategories];
+  }, [galleryImages]);
+
+  const filteredImages = useMemo(() => {
+    return selectedCategory === 'all' 
+      ? galleryImages 
+      : galleryImages.filter(image => image.category === selectedCategory);
+  }, [selectedCategory, galleryImages]);
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <Layout 
+        title="Gallery - Indore Photography & Images"
+        description="Explore beautiful photographs of Indore's culture, heritage, food, and attractions through our curated gallery."
+      >
+        <div className="py-20">
+          <div className="container mx-auto px-4 lg:px-6">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-lg">Loading gallery...</p>
+            </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <Layout 
+        title="Gallery - Indore Photography & Images"
+        description="Explore beautiful photographs of Indore's culture, heritage, food, and attractions through our curated gallery."
+      >
+        <div className="py-20">
+          <div className="container mx-auto px-4 lg:px-6">
+            <div className="text-center">
+              <p className="text-lg text-destructive">Failed to load gallery. Please try again later.</p>
+            </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   const getCategoryIcon = (category: string) => {
     const icons: Record<string, string> = {
       'historical': '🏛️',
+      'places': '📍',
+      'culture': '🎭',
       'food': '🍽️',
       'events': '🎉',
-      'nature': '🌿'
+      'nature': '🌿',
+      'people': '👥',
+      'architecture': '🏗️'
     };
     return icons[category] || '📸';
   };
@@ -100,14 +179,18 @@ export default function GalleryPage() {
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
       'historical': 'bg-amber-500/20 text-amber-400',
+      'places': 'bg-blue-500/20 text-blue-400',
+      'culture': 'bg-purple-500/20 text-purple-400',
       'food': 'bg-orange-500/20 text-orange-400',
       'events': 'bg-pink-500/20 text-pink-400',
-      'nature': 'bg-green-500/20 text-green-400'
+      'nature': 'bg-green-500/20 text-green-400',
+      'people': 'bg-indigo-500/20 text-indigo-400',
+      'architecture': 'bg-gray-500/20 text-gray-400'
     };
     return colors[category] || 'bg-gray-500/20 text-gray-400';
   };
 
-  const openLightbox = (imageId: number) => {
+  const openLightbox = (imageId: string) => {
     setSelectedImage(imageId);
   };
 
@@ -115,7 +198,7 @@ export default function GalleryPage() {
     setSelectedImage(null);
   };
 
-  const selectedImageData = selectedImage ? galleryImages.find(img => img.id === selectedImage) : null;
+  const selectedImageData = selectedImage ? galleryImages.find(img => img._id === selectedImage) : null;
 
   return (
     <Layout 
@@ -193,18 +276,18 @@ export default function GalleryPage() {
           <div className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6">
             {filteredImages.map((image, index) => (
               <motion.div
-                key={image.id}
+                key={image._id}
                 className="break-inside-avoid group cursor-pointer"
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
-                onClick={() => openLightbox(image.id)}
-                data-testid={`image-${image.id}`}
+                onClick={() => openLightbox(image._id)}
+                data-testid={`card-gallery-${image._id}`}
               >
                 <div className="relative overflow-hidden rounded-lg bg-card border border-border">
                   <img
-                    src={image.src}
-                    alt={image.alt}
+                    src={image.imageUrl}
+                    alt={image.title}
                     className="w-full object-cover transition-transform duration-300 group-hover:scale-105"
                     loading="lazy"
                   />
@@ -223,7 +306,7 @@ export default function GalleryPage() {
                     </div>
                   </div>
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <p className="text-white text-sm font-medium">{image.alt}</p>
+                    <p className="text-white text-sm font-medium">{image.title}</p>
                   </div>
                 </div>
               </motion.div>
@@ -247,14 +330,14 @@ export default function GalleryPage() {
                 onClick={(e) => e.stopPropagation()}
               >
                 <img
-                  src={selectedImageData.src}
-                  alt={selectedImageData.alt}
+                  src={selectedImageData.imageUrl}
+                  alt={selectedImageData.title}
                   className="max-w-full max-h-[80vh] object-contain rounded-lg"
                 />
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-white text-lg font-semibold mb-1">{selectedImageData.alt}</h3>
+                      <h3 className="text-white text-lg font-semibold mb-1">{selectedImageData.title}</h3>
                       <span className={`px-3 py-1 rounded-full text-xs font-medium ${getCategoryColor(selectedImageData.category)}`}>
                         {getCategoryIcon(selectedImageData.category)} {selectedImageData.category}
                       </span>

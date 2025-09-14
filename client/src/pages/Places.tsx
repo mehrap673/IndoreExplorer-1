@@ -1,8 +1,24 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import Layout from '@/components/Layout';
 
-const places = [
+interface Place {
+  _id: string;
+  name: string;
+  description: string;
+  location: string;
+  category: string;
+  rating: number;
+  imageUrl: string;
+  tags: string[];
+  visitingHours: string;
+  entryFee: string;
+  featured: boolean;
+  isActive: boolean;
+}
+
+const staticPlaces = [
   {
     id: 1,
     name: 'Rajwada Palace',
@@ -69,14 +85,64 @@ const places = [
   }
 ];
 
-const categories = ['all', 'historical', 'religious', 'modern', 'nature'];
+const categories = ['all', 'Historical', 'Religious', 'Modern', 'Nature'];
 
 export default function PlacesPage() {
   const [selectedCategory, setSelectedCategory] = useState('all');
 
+  // Fetch places from MongoDB API
+  const { data: places = [], isLoading, error } = useQuery<Place[]>({
+    queryKey: ['/api/places'],
+    initialData: staticPlaces.map(p => ({ 
+      ...p, 
+      _id: p.id.toString(), 
+      rating: 4.5, 
+      tags: [], 
+      visitingHours: "9:00 AM - 6:00 PM", 
+      entryFee: "Free", 
+      featured: true, 
+      isActive: true 
+    })) as Place[]
+  });
+
   const filteredPlaces = selectedCategory === 'all' 
     ? places 
-    : places.filter(place => place.category === selectedCategory);
+    : places.filter(place => place.category.toLowerCase() === selectedCategory.toLowerCase());
+
+  if (isLoading) {
+    return (
+      <Layout 
+        title="Places to Visit in Indore - Tourist Attractions & Monuments"
+        description="Explore the best places to visit in Indore including historical palaces, religious temples, modern attractions, and natural spots."
+      >
+        <div className="py-20">
+          <div className="container mx-auto px-4 lg:px-6">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-lg">Loading places to visit...</p>
+            </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error) {
+    return (
+      <Layout 
+        title="Places to Visit in Indore - Tourist Attractions & Monuments"
+        description="Explore the best places to visit in Indore including historical palaces, religious temples, modern attractions, and natural spots."
+      >
+        <div className="py-20">
+          <div className="container mx-auto px-4 lg:px-6">
+            <div className="text-center">
+              <p className="text-lg text-destructive">Failed to load places. Please try again later.</p>
+            </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   const getCategoryIcon = (category: string) => {
     const icons: Record<string, string> = {
@@ -145,13 +211,13 @@ export default function PlacesPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
             {filteredPlaces.map((place, index) => (
               <motion.div
-                key={place.id}
+                key={place._id}
                 className="bg-card border border-border rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 group"
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
                 whileHover={{ y: -8 }}
-                data-testid={`place-${place.id}`}
+                data-testid={`place-${place._id}`}
               >
                 <div className="relative h-48 overflow-hidden">
                   <img
@@ -174,15 +240,23 @@ export default function PlacesPage() {
                 </div>
                 
                 <div className="p-6">
-                  <h3 className="text-xl font-bold mb-3" data-testid={`place-name-${place.id}`}>
+                  <h3 className="text-xl font-bold mb-3" data-testid={`place-name-${place._id}`}>
                     {place.name}
                   </h3>
-                  <p className="text-muted-foreground mb-4 line-clamp-3" data-testid={`place-description-${place.id}`}>
+                  <p className="text-muted-foreground mb-4 line-clamp-3" data-testid={`place-description-${place._id}`}>
                     {place.description}
                   </p>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">{place.location}</span>
-                    <button className="text-primary hover:text-primary/80 font-medium transition-colors flex items-center gap-1" data-testid={`place-learn-more-${place.id}`}>
+                    <div className="text-sm text-muted-foreground">
+                      <div>📍 {place.location}</div>
+                      {place.rating && (
+                        <div className="flex items-center gap-1 mt-1">
+                          <span>⭐</span>
+                          <span>{place.rating}/5</span>
+                        </div>
+                      )}
+                    </div>
+                    <button className="text-primary hover:text-primary/80 font-medium transition-colors flex items-center gap-1" data-testid={`place-learn-more-${place._id}`}>
                       Learn More
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

@@ -1,8 +1,24 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import Layout from '@/components/Layout';
 
-const foods = [
+interface FoodItem {
+  _id: string;
+  name: string;
+  description: string;
+  category: 'breakfast' | 'snacks' | 'sweets' | 'dinner' | 'beverages';
+  priceRange: string;
+  rating?: number;
+  isVegetarian: boolean;
+  ingredients?: string[];
+  restaurants?: string[];
+  imageUrl: string;
+  featured: boolean;
+  isActive: boolean;
+}
+
+const staticFoods = [
   {
     id: 1,
     name: 'Poha Jalebi',
@@ -59,14 +75,54 @@ const foods = [
   }
 ];
 
-const categories = ['all', 'breakfast', 'snacks', 'sweets', 'dinner'];
+const categories = ['all', 'breakfast', 'snacks', 'sweets', 'dinner', 'beverages'];
 
 export default function FoodPage() {
   const [selectedCategory, setSelectedCategory] = useState('all');
 
+  // Fetch food items from MongoDB API
+  const { data: foods = [], isLoading, error } = useQuery<FoodItem[]>({
+    queryKey: ['/api/food']
+  });
+
   const filteredFoods = selectedCategory === 'all' 
     ? foods 
-    : foods.filter(food => food.category === selectedCategory);
+    : foods.filter(food => food.category.toLowerCase().includes(selectedCategory.toLowerCase()) || selectedCategory.toLowerCase() === food.category.toLowerCase());
+
+  if (isLoading) {
+    return (
+      <Layout 
+        title="Indore Food Guide - Famous Street Food & Local Cuisine"
+        description="Explore Indore's famous street food including Poha Jalebi, Dal Bafla, Indori Namkeen and more local delicacies."
+      >
+        <div className="py-20">
+          <div className="container mx-auto px-4 lg:px-6">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-lg">Loading delicious food items...</p>
+            </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error) {
+    return (
+      <Layout 
+        title="Indore Food Guide - Famous Street Food & Local Cuisine"
+        description="Explore Indore's famous street food including Poha Jalebi, Dal Bafla, Indori Namkeen and more local delicacies."
+      >
+        <div className="py-20">
+          <div className="container mx-auto px-4 lg:px-6">
+            <div className="text-center">
+              <p className="text-lg text-destructive">Failed to load food items. Please try again later.</p>
+            </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   const getCategoryIcon = (category: string) => {
     const icons: Record<string, string> = {
@@ -172,13 +228,13 @@ export default function FoodPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
             {filteredFoods.map((food, index) => (
               <motion.div
-                key={food.id}
+                key={food._id}
                 className="bg-card border border-border rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 group"
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
                 whileHover={{ y: -8 }}
-                data-testid={`food-${food.id}`}
+                data-testid={`food-${food._id}`}
               >
                 <div className="relative h-48 overflow-hidden">
                   <img
@@ -198,19 +254,19 @@ export default function FoodPage() {
                 
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-xl font-bold" data-testid={`food-name-${food.id}`}>
+                    <h3 className="text-xl font-bold" data-testid={`food-name-${food._id}`}>
                       {food.name}
                     </h3>
-                    <div className="flex items-center gap-1" data-testid={`food-rating-${food.id}`}>
-                      {getRatingStars(food.rating)}
+                    <div className="text-sm text-muted-foreground" data-testid={`food-spice-${food._id}`}>
+                      🌶️ {food.spiceLevel} | {food.isVegetarian ? '🌱 Veg' : '🍗 Non-Veg'}
                     </div>
                   </div>
-                  <p className="text-muted-foreground mb-4 line-clamp-3" data-testid={`food-description-${food.id}`}>
+                  <p className="text-muted-foreground mb-4 line-clamp-3" data-testid={`food-description-${food._id}`}>
                     {food.description}
                   </p>
                   <div className="flex items-center justify-between">
                     <span className="text-primary font-semibold">{food.priceRange}</span>
-                    <button className="text-primary hover:text-primary/80 font-medium transition-colors flex items-center gap-1" data-testid={`food-try-${food.id}`}>
+                    <button className="text-primary hover:text-primary/80 font-medium transition-colors flex items-center gap-1" data-testid={`food-try-${food._id}`}>
                       Try Now
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
