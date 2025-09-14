@@ -12,6 +12,7 @@ export interface IStorage {
   getAdminUserByUsername(username: string): Promise<IAdminUser | null>;
   getAdminUserByEmail(email: string): Promise<IAdminUser | null>;
   createAdminUser(userData: Partial<IAdminUser>): Promise<IAdminUser>;
+  getAllAdminUsers(): Promise<IAdminUser[]>;
   
   // Places methods
   getAllPlaces(isActive?: boolean): Promise<IPlace[]>;
@@ -106,6 +107,10 @@ export class MongoStorage implements IStorage {
     }
     const user = new AdminUser(userData);
     return await user.save();
+  }
+
+  async getAllAdminUsers(): Promise<IAdminUser[]> {
+    return await AdminUser.find().select('-password');
   }
 
   // Places methods

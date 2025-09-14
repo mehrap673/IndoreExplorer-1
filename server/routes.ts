@@ -3,9 +3,10 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { 
   placeValidation, foodValidation, eventValidation, galleryValidation, 
-  aboutValidation, contactMessageValidation, settingsValidation 
+  aboutValidation, contactMessageValidation, settingsValidation, adminUserValidation 
 } from "@shared/mongodb-schemas";
 import { type WeatherData, type NewsArticle } from "@shared/schema";
+import { authenticateAdmin, requireSuperAdmin, loginAdmin, registerFirstAdmin, type AuthRequest } from "./auth";
 
 const OPENWEATHER_API_KEY = process.env.OPENWEATHER_API_KEY || 'demo_key';
 const NEWS_API_KEY = process.env.NEWS_API_KEY || 'demo_key';
@@ -82,6 +83,48 @@ async function getNewsData(): Promise<NewsArticle[]> {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // ==== AUTHENTICATION ROUTES ====
+  app.post('/api/auth/login', async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      
+      if (!username || !password) {
+        return res.status(400).json({ error: 'Username and password are required' });
+      }
+
+      const result = await loginAdmin(username, password);
+      res.json(result);
+    } catch (error) {
+      console.error('Login error:', error);
+      res.status(401).json({ error: 'Invalid credentials' });
+    }
+  });
+
+  app.post('/api/auth/register-first-admin', async (req, res) => {
+    try {
+      const { username, email, password } = req.body;
+      
+      if (!username || !email || !password) {
+        return res.status(400).json({ error: 'Username, email, and password are required' });
+      }
+
+      const result = await registerFirstAdmin({ username, email, password });
+      res.json(result);
+    } catch (error) {
+      console.error('Registration error:', error);
+      res.status(400).json({ error: error instanceof Error ? error.message : 'Registration failed' });
+    }
+  });
+
+  app.get('/api/auth/verify', authenticateAdmin, (req: AuthRequest, res) => {
+    res.json({ user: req.adminUser });
+  });
+
+  app.post('/api/auth/logout', authenticateAdmin, (req, res) => {
+    // With JWT, logout is handled client-side by removing the token
+    res.json({ message: 'Logged out successfully' });
+  });
+
   // Weather API
   app.get('/api/weather', async (req, res) => {
     try {
@@ -110,6 +153,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ==== PLACES API ENDPOINTS ====
+  // Public endpoint for fetching active places
   app.get('/api/places', async (req, res) => {
     try {
       const isActive = req.query.active === 'false' ? false : true;
@@ -121,6 +165,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public endpoint for fetching single place
   app.get('/api/places/:id', async (req, res) => {
     try {
       const place = await storage.getPlace(req.params.id);
@@ -134,7 +179,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/places', async (req, res) => {
+  // Admin endpoint for creating places
+  app.post('/api/places', authenticateAdmin, async (req, res) => {
     try {
       const validatedData = placeValidation.parse(req.body);
       const place = await storage.createPlace(validatedData);
@@ -145,7 +191,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put('/api/places/:id', async (req, res) => {
+  // Admin endpoint for updating places
+  app.put('/api/places/:id', authenticateAdmin, async (req, res) => {
     try {
       const validatedData = placeValidation.partial().parse(req.body);
       const place = await storage.updatePlace(req.params.id, validatedData);
@@ -159,7 +206,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/places/:id', async (req, res) => {
+  // Admin endpoint for deleting places
+  app.delete('/api/places/:id', authenticateAdmin, async (req, res) => {
     try {
       const deleted = await storage.deletePlace(req.params.id);
       if (!deleted) {

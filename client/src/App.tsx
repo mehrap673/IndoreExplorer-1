@@ -12,6 +12,7 @@ import Places from "@/pages/Places";
 import Food from "@/pages/Food";
 import Events from "@/pages/Events";
 import Gallery from "@/pages/Gallery";
+import AdminApp from "@/pages/admin/AdminApp";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -26,6 +27,8 @@ function Router() {
       <Route path="/food" component={Food} />
       <Route path="/events" component={Events} />
       <Route path="/gallery" component={Gallery} />
+      <Route path="/admin" component={AdminApp} />
+      <Route path="/admin/*" component={AdminApp} />
       {/* Fallback to 404 */}
       <Route component={NotFound} />
     </Switch>
