@@ -1,0 +1,99 @@
+I have an existing MERN project for “All About Indore” with Places and Food management fully implemented (backend + admin frontend). Now continue implementing the remaining sections and dynamic functionality as follows:
+
+🗓 Events Management
+
+Manage events data on server
+
+CRUD for cultural events, festivals, and activities.
+
+Include date fields, location, description, and category.
+
+Validation and pagination similar to Places/Food.
+
+Manage events on admin page
+
+Admin table with search, filter, sorting, and pagination.
+
+Form for adding/editing events with date picker.
+
+Optimistic updates and proper error handling.
+
+🖼 Gallery Management
+
+Manage gallery images on server
+
+CRUD operations for images with title, description, category.
+
+Manage gallery on admin page
+
+Table + form interface similar to Places/Food.
+
+Image upload with preview.
+
+📩 Contact Management
+
+Manage contact messages on server
+
+Store user messages with name, email, subject, message.
+
+Manage contacts and replies
+
+Admin interface to view, search, filter, and respond to messages.
+
+⚙️ Site Configuration & Settings
+
+Create site configuration settings
+
+Admin can update News API key, Weather API key, site info.
+
+🌤 Weather & News
+
+Get local weather data
+
+Fetch live weather for Indore from OpenWeatherMap API.
+
+Get local news with filters
+
+Fetch live news for Indore from NewsAPI or RSS feeds.
+
+🌐 Client-Side Integration
+
+Update client pages with data
+
+Replace static content for Events, Gallery, Contact, Weather, and News with MongoDB-driven content.
+
+Keep existing designs and layouts unchanged.
+
+📸 Admin UX Enhancements
+
+Upload and preview images
+
+For Gallery, Places, Food, and Events.
+
+Add search and filters to tables
+
+For all admin tables (Events, Gallery, Contacts, etc.).
+
+🗄 Data & Documentation
+
+Create starting data for system
+
+Populate MongoDB collections with sample data for Events, Gallery, Contact, Settings.
+
+Write project setup guide (README.md)
+
+Include project overview, tech stack, folder structure, setup instructions, admin login, API keys, dark/light mode, and how to run the project locally.
+
+⚡ Notes for Replit AI
+
+Keep client-side design exactly as is, only make content dynamic.
+
+Admin panel must be modular, responsive, and support dark/light mode.
+
+Protect all admin routes with authentication.
+
+Use environment variables for JWT secret and API keys.
+
+Implement proper validation, pagination, filtering, and optimistic updates for all tables.
+
+Ensure mobile responsiveness and consistent UX with existing sections.
