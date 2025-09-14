@@ -7,7 +7,7 @@ const highlights = [
   {
     title: 'Historical Places',
     description: 'Explore magnificent palaces, ancient temples, and architectural marvels',
-    imageUrl: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250',
+    imageUrl: 'https://s7ap1.scene7.com/is/image/incredibleindia/chhataris-indore-mp-city-hero?qlt=82&ts=1726671229069',
     href: '/places',
     icon: '🏛️',
     stats: '15+ Attractions'
@@ -15,7 +15,7 @@ const highlights = [
   {
     title: 'Food & Cuisine',
     description: 'Savor authentic Indori flavors from famous poha-jalebi to diverse street food delights',
-    imageUrl: 'https://images.unsplash.com/photo-1626132647523-66f5bf380027?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250',
+    imageUrl: 'https://media.assettype.com/knocksense%2F2022-09%2Fe032fea0-955c-4829-a644-5f3e49076065%2F90003634_388F_4858_90CD_9A5161A4A6E0.jpeg?w=1200&auto=format%2Ccompress&fit=max',
     href: '/food',
     icon: '🍽️',
     stats: '200+ Dishes'
@@ -23,7 +23,7 @@ const highlights = [
   {
     title: 'Events & Festivals',
     description: 'Join vibrant celebrations and cultural events that bring the city to life throughout the year',
-    imageUrl: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250',
+    imageUrl: 'https://curlytales.com/wp-content/uploads/2023/01/cover-1-9.jpg',
     href: '/events',
     icon: '🎉',
     stats: '50+ Events'
@@ -78,7 +78,7 @@ const features = [
   {
     icon: '🏆',
     title: 'Cleanest City',
-    description: 'Ranked as one of Indias cleanest cities for multiple years'
+    description: 'Ranked as one of Indias cleanest cities for 8 consecutive years'
   },
   {
     icon: '🎭',
@@ -96,13 +96,13 @@ const services = [
   {
     title: 'Guided Tours',
     description: 'Professional local guides who know every corner of Indore',
-    image: 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&h=300',
+    image: 'https://www.indiantempletour.com/wp-content/uploads/2019/01/BHOPAL-MAHESHWAR-UJJAIN-TOUR-scaled.jpg',
     features: ['Historical insights', 'Local stories', 'Hidden gems']
   },
   {
     title: 'Food Tours',
     description: 'Taste the authentic flavors of Indore with our culinary experts',
-    image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&h=300',
+    image: 'https://www.chefkunalkapur.com/wp-content/uploads/2022/02/indori-poha-1300x926.jpg?v=1643978014',
     features: ['Street food tours', 'Traditional restaurants', 'Cooking classes']
   },
   {
@@ -128,28 +128,28 @@ const attractions = [
   {
     name: 'Rajwada Palace',
     description: 'Historic palace of the Holkar dynasty with stunning architecture',
-    image: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250',
+    image: 'https://cdn1.tripoto.com/media/filter/nl/img/2380291/Image/1699450355_1_cxey9yezk3ya_1hycjqqoq.jpg.webp',
     rating: 4.8,
     category: 'Historical'
   },
   {
     name: 'Sarafa Bazaar',
     description: 'Famous night food market with incredible street food variety',
-    image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250',
+    image: 'https://im.hunt.in/cg/indore/City-Guide/sara-crowd.jpg',
     rating: 4.9,
     category: 'Food'
   },
   {
     name: 'Lal Bagh Palace',
     description: 'Opulent palace showcasing European architectural influence',
-    image: 'https://images.unsplash.com/photo-1609920658906-8223bd289001?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250',
+    image: 'https://cdn1.tripoto.com/media/filter/nl/img/2380291/Image/1699522273_zc_6538_pano.jpg.webp',
     rating: 4.7,
     category: 'Historical'
   },
   {
     name: 'Patalpani Waterfall',
     description: 'Scenic waterfall perfect for nature lovers and photographers',
-    image: 'https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250',
+    image: 'https://wanderon-images.gumlet.io/blogs/new/2024/04/best-time-to-visit-patalpani-waterfall.png',
     rating: 4.6,
     category: 'Nature'
   }
@@ -264,7 +264,7 @@ export default function HomePage() {
               className="relative"
             >
               <img
-                src="https://images.unsplash.com/photo-1609920658906-8223bd289001?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+                src="https://c.ndtvimg.com/2025-04/eqk34lk8_indore_625x300_30_April_25.jpg?im=FeatureCrop,algorithm=dnn,width=773,height=435"
                 alt="Indore architectural beauty"
                 className="rounded-lg shadow-2xl w-full"
               />
