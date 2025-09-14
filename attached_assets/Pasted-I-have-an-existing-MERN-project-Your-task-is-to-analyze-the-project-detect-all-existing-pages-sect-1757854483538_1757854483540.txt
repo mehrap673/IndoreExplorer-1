@@ -1,0 +1,91 @@
+I have an existing MERN project. Your task is to analyze the project, detect all existing pages/sections, and extend it by adding a full-featured dynamic Admin Panel with MongoDB integration.
+
+🔐 Admin Panel Requirements
+
+Create a secure Admin Panel at /admin with authentication (JWT or NextAuth).
+
+Add dark/light mode toggle, saving preference in local storage.
+
+Dashboard should include:
+
+Sidebar navigation with links to all sections.
+
+Responsive UI with TailwindCSS.
+
+Use tables for listing content and forms/modals for creating/editing.
+
+Image upload support with preview.
+
+Search + filter options for large datasets.
+
+📄 Admin Features (CRUD for All Sections)
+
+Auto-detect all pages/sections from the client project (e.g., Places to Visit, Food & Cuisine, Events & Festivals, Gallery, History/About, Contact/Feedback, News, Weather, etc.).
+
+For each section, add Create, Read, Update, Delete functionality in the admin panel.
+
+Admin should be able to:
+
+Add/edit text, images, links, dates, categories.
+
+Manage timeline/history entries.
+
+Manage events with date pickers.
+
+View feedback submissions from users.
+
+Update API keys for News & Weather in a Settings page.
+
+📦 Database (MongoDB)
+
+Integrate MongoDB (credentials will be provided).
+
+Create collections for each content type (places, food, events, gallery, history, settings, feedback).
+
+Pre-fill with sample data for all sections so I can edit later.
+
+Ensure client pages fetch data dynamically from MongoDB instead of static code.
+
+🌐 API Integrations
+
+Weather: Connect OpenWeatherMap API. Show current weather + forecast on /weather. Admin should be able to update API key + location from settings.
+
+News: Connect NewsAPI or RSS feed. Show dynamic news on /news. Admin should be able to update API key + categories from settings.
+
+🖥️ Client Website
+
+Keep the existing client-facing site exactly as it is.
+
+Just replace static content with database-driven dynamic content.
+
+Do not change layouts or designs on the client side.
+
+📘 README.md
+
+Generate a complete README file including:
+
+Project overview.
+
+Tech stack (Next.js, React, TailwindCSS, MongoDB, APIs, Framer Motion).
+
+Folder structure explanation.
+
+Setup instructions (installation, environment variables, database setup).
+
+How to run locally & deploy on Vercel/Replit.
+
+Admin login instructions.
+
+API configuration guide (Weather + News).
+
+Notes on dark/light mode.
+
+⚡ Final Notes
+
+Code must be modular, clean, and production-ready.
+
+Protect all admin routes with authentication/authorization.
+
+Use Tailwind utility classes consistently.
+
+Ensure full mobile responsiveness across all screens.
