@@ -7,6 +7,7 @@ import {
 } from "@shared/mongodb-schemas";
 import { type WeatherData, type NewsArticle } from "@shared/schema";
 import { authenticateAdmin, requireSuperAdmin, loginAdmin, registerFirstAdmin, type AuthRequest } from "./auth";
+import { seedDatabase } from "./seed-data";
 
 const OPENWEATHER_API_KEY = process.env.OPENWEATHER_API_KEY || 'demo_key';
 const NEWS_API_KEY = process.env.NEWS_API_KEY || 'demo_key';
@@ -123,6 +124,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/auth/logout', authenticateAdmin, (req, res) => {
     // With JWT, logout is handled client-side by removing the token
     res.json({ message: 'Logged out successfully' });
+  });
+
+  // Seed database endpoint (development only)
+  app.post('/api/seed-database', async (req, res) => {
+    try {
+      if (process.env.NODE_ENV === 'production') {
+        return res.status(403).json({ error: 'Seeding not allowed in production' });
+      }
+      
+      await seedDatabase();
+      res.json({ message: 'Database seeded successfully!' });
+    } catch (error) {
+      console.error('Seeding error:', error);
+      res.status(500).json({ error: 'Failed to seed database' });
+    }
   });
 
   // Weather API
