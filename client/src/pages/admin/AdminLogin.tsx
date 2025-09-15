@@ -6,7 +6,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
+
+// Assuming apiRequest is not used based on the code provided, so it's removed.
+// If you use it elsewhere, you can re-add it.
 
 interface LoginResponse {
   token: string;
@@ -18,9 +20,18 @@ interface LoginResponse {
   };
 }
 
+// Added an interface for a potential error response from your API
+interface ApiError {
+  message: string;
+  // You can add other properties your API might send on error
+  // e.g., statusCode: number;
+}
+
+
 interface AdminLoginProps {
   onLogin: (token: string, user: LoginResponse['user']) => void;
 }
+
 
 export default function AdminLogin({ onLogin }: AdminLoginProps) {
   const [formData, setFormData] = useState({
@@ -29,6 +40,17 @@ export default function AdminLogin({ onLogin }: AdminLoginProps) {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isFirstAdmin, setIsFirstAdmin] = useState(false);
+
+  // Helper function to handle API responses and errors
+  const handleApiResponse = async (response: Response) => {
+    if (!response.ok) {
+      // Try to parse the error message from the server
+      const errorData: ApiError = await response.json();
+      // Throw an error to be caught by React Query's onError
+      throw new Error(errorData.message || `Request failed with status ${response.status}`);
+    }
+    return response.json() as Promise<LoginResponse>;
+  };
 
   // Login mutation
   const loginMutation = useMutation({
@@ -40,12 +62,13 @@ export default function AdminLogin({ onLogin }: AdminLoginProps) {
           'Content-Type': 'application/json',
         },
       });
-      return response.json() as Promise<LoginResponse>;
+      return handleApiResponse(response);
     },
     onSuccess: (data) => {
       onLogin(data.token, data.user);
     },
   });
+
 
   // Register first admin mutation
   const registerMutation = useMutation({
@@ -57,16 +80,21 @@ export default function AdminLogin({ onLogin }: AdminLoginProps) {
           'Content-Type': 'application/json',
         },
       });
-      return response.json() as Promise<LoginResponse>;
+      return handleApiResponse(response);
     },
     onSuccess: (data) => {
       onLogin(data.token, data.user);
     },
   });
 
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Clear previous errors before a new submission
+    loginMutation.reset();
+    registerMutation.reset();
+
     if (isFirstAdmin) {
       // For first admin registration, use username as email if no @ symbol
       const email = formData.username.includes('@') ? formData.username : `${formData.username}@admin.local`;
@@ -80,6 +108,7 @@ export default function AdminLogin({ onLogin }: AdminLoginProps) {
     }
   };
 
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
       ...prev,
@@ -87,8 +116,10 @@ export default function AdminLogin({ onLogin }: AdminLoginProps) {
     }));
   };
 
+
   const error = loginMutation.error || registerMutation.error;
   const isLoading = loginMutation.isPending || registerMutation.isPending;
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
@@ -161,7 +192,8 @@ export default function AdminLogin({ onLogin }: AdminLoginProps) {
             {error && (
               <Alert variant="destructive">
                 <AlertDescription data-testid="text-error">
-                  {error instanceof Error ? error.message : 'An error occurred'}
+                  {/* Now this will display the specific message from your backend */}
+                  {error instanceof Error ? error.message : 'An unknown error occurred'}
                 </AlertDescription>
               </Alert>
             )}

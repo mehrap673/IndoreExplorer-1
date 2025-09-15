@@ -1,37 +1,52 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { 
-  placeValidation, foodValidation, eventValidation, galleryValidation, 
-  aboutValidation, contactMessageValidation, settingsValidation, adminUserValidation 
+import {
+  placeValidation,
+  foodValidation,
+  eventValidation,
+  galleryValidation,
+  aboutValidation,
+  contactMessageValidation,
+  settingsValidation,
+  adminUserValidation,
 } from "@shared/mongodb-schemas";
 import { type WeatherData, type NewsArticle } from "@shared/schema";
-import { authenticateAdmin, requireSuperAdmin, loginAdmin, registerFirstAdmin, type AuthRequest } from "./auth";
+import {
+  authenticateAdmin,
+  requireSuperAdmin,
+  loginAdmin,
+  registerFirstAdmin,
+  type AuthRequest,
+} from "./auth";
 import { seedDatabase } from "./seed-data";
+import { Types } from "mongoose";
 
-const OPENWEATHER_API_KEY = process.env.OPENWEATHER_API_KEY || 'demo_key';
-const NEWS_API_KEY = process.env.NEWS_API_KEY || 'demo_key';
+const OPENWEATHER_API_KEY = process.env.OPENWEATHER_API_KEY || "demo_key";
+const NEWS_API_KEY = process.env.NEWS_API_KEY || "demo_key";
 
 async function getWeatherData(): Promise<WeatherData | null> {
   try {
     const response = await fetch(
       `https://api.openweathermap.org/data/2.5/weather?q=Indore,IN&appid=${OPENWEATHER_API_KEY}&units=metric`
     );
-    
+
     if (!response.ok) {
-      console.error('Weather API error:', response.status);
+      console.error("Weather API error:", response.status);
       return null;
     }
-    
+
     const data = await response.json();
-    
+
     // Get forecast data
     const forecastResponse = await fetch(
       `https://api.openweathermap.org/data/2.5/forecast?q=Indore,IN&appid=${OPENWEATHER_API_KEY}&units=metric`
     );
-    
-    const forecastData = forecastResponse.ok ? await forecastResponse.json() : null;
-    
+
+    const forecastData = forecastResponse.ok
+      ? await forecastResponse.json()
+      : null;
+
     return {
       temperature: Math.round(data.main.temp),
       condition: data.weather[0].description,
@@ -39,16 +54,22 @@ async function getWeatherData(): Promise<WeatherData | null> {
       windSpeed: Math.round(data.wind.speed * 3.6), // Convert m/s to km/h
       visibility: Math.round(data.visibility / 1000), // Convert m to km
       feelsLike: Math.round(data.main.feels_like),
-      forecast: forecastData?.list?.slice(0, 7).map((item: any, index: number) => ({
-        day: index === 0 ? 'Today' : new Date(item.dt * 1000).toLocaleDateString('en', { weekday: 'short' }),
-        icon: item.weather[0].icon,
-        condition: item.weather[0].main,
-        high: Math.round(item.main.temp_max),
-        low: Math.round(item.main.temp_min),
-      })) || []
+      forecast:
+        forecastData?.list?.slice(0, 7).map((item: any, index: number) => ({
+          day:
+            index === 0
+              ? "Today"
+              : new Date(item.dt * 1000).toLocaleDateString("en", {
+                  weekday: "short",
+                }),
+          icon: item.weather[0].icon,
+          condition: item.weather[0].main,
+          high: Math.round(item.main.temp_max),
+          low: Math.round(item.main.temp_min),
+        })) || [],
     };
   } catch (error) {
-    console.error('Failed to fetch weather data:', error);
+    console.error("Failed to fetch weather data:", error);
     return null;
   }
 }
@@ -58,579 +79,619 @@ async function getNewsData(): Promise<NewsArticle[]> {
     const response = await fetch(
       `https://newsapi.org/v2/everything?q=Indore&apiKey=${NEWS_API_KEY}&language=en&sortBy=publishedAt&pageSize=10`
     );
-    
+
     if (!response.ok) {
-      console.error('News API error:', response.status);
+      console.error("News API error:", response.status);
       return [];
     }
-    
+
     const data = await response.json();
-    
-    return data.articles?.map((article: any) => ({
-      id: article.url,
-      title: article.title,
-      description: article.description,
-      content: article.content,
-      author: article.author || 'Unknown',
-      publishedAt: article.publishedAt,
-      urlToImage: article.urlToImage,
-      category: 'general',
-      url: article.url,
-    })) || [];
+
+    return (
+      data.articles?.map((article: any) => ({
+        id: article.url,
+        title: article.title,
+        description: article.description,
+        content: article.content,
+        author: article.author || "Unknown",
+        publishedAt: article.publishedAt,
+        urlToImage: article.urlToImage,
+        category: "general",
+        url: article.url,
+      })) || []
+    );
   } catch (error) {
-    console.error('Failed to fetch news data:', error);
+    console.error("Failed to fetch news data:", error);
     return [];
   }
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // ==== AUTHENTICATION ROUTES ====
-  app.post('/api/auth/login', async (req, res) => {
+  app.post("/api/auth/login", async (req, res) => {
     try {
       const { username, password } = req.body;
-      
+
       if (!username || !password) {
-        return res.status(400).json({ error: 'Username and password are required' });
+        return res
+          .status(400)
+          .json({ error: "Username and password are required" });
       }
 
       const result = await loginAdmin(username, password);
       res.json(result);
     } catch (error) {
-      console.error('Login error:', error);
-      res.status(401).json({ error: 'Invalid credentials' });
+      console.error("Login error:", error);
+      res.status(401).json({ error: "Invalid credentials" });
     }
   });
 
-  app.post('/api/auth/register-first-admin', async (req, res) => {
+  app.post("/api/auth/register-first-admin", async (req, res) => {
     try {
       const { username, email, password } = req.body;
-      
+
       if (!username || !email || !password) {
-        return res.status(400).json({ error: 'Username, email, and password are required' });
+        return res
+          .status(400)
+          .json({ error: "Username, email, and password are required" });
       }
 
       const result = await registerFirstAdmin({ username, email, password });
       res.json(result);
     } catch (error) {
-      console.error('Registration error:', error);
-      res.status(400).json({ error: error instanceof Error ? error.message : 'Registration failed' });
+      console.error("Registration error:", error);
+      res
+        .status(400)
+        .json({
+          error: error instanceof Error ? error.message : "Registration failed",
+        });
     }
   });
 
-  app.get('/api/auth/verify', authenticateAdmin, (req: AuthRequest, res) => {
+  app.get("/api/auth/verify", authenticateAdmin, (req: AuthRequest, res) => {
     res.json({ user: req.adminUser });
   });
 
-  app.post('/api/auth/logout', authenticateAdmin, (req, res) => {
+  app.post("/api/auth/logout", authenticateAdmin, (req, res) => {
     // With JWT, logout is handled client-side by removing the token
-    res.json({ message: 'Logged out successfully' });
+    res.json({ message: "Logged out successfully" });
   });
 
   // Seed database endpoint (development only)
-  app.post('/api/seed-database', async (req, res) => {
+  app.post("/api/seed-database", async (req, res) => {
     try {
-      if (process.env.NODE_ENV === 'production') {
-        return res.status(403).json({ error: 'Seeding not allowed in production' });
+      if (process.env.NODE_ENV === "production") {
+        return res
+          .status(403)
+          .json({ error: "Seeding not allowed in production" });
       }
-      
+
       await seedDatabase();
-      res.json({ message: 'Database seeded successfully!' });
+      res.json({ message: "Database seeded successfully!" });
     } catch (error) {
-      console.error('Seeding error:', error);
-      res.status(500).json({ error: 'Failed to seed database' });
+      console.error("Seeding error:", error);
+      res.status(500).json({ error: "Failed to seed database" });
     }
   });
 
   // Weather API
-  app.get('/api/weather', async (req, res) => {
+  app.get("/api/weather", async (req, res) => {
     try {
       const weatherData = await getWeatherData();
-      
+
       if (!weatherData) {
-        return res.status(500).json({ error: 'Failed to fetch weather data' });
+        return res.status(500).json({ error: "Failed to fetch weather data" });
       }
-      
+
       res.json(weatherData);
     } catch (error) {
-      console.error('Weather API error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      console.error("Weather API error:", error);
+      res.status(500).json({ error: "Internal server error" });
     }
   });
 
   // News API
-  app.get('/api/news', async (req, res) => {
+  app.get("/api/news", async (req, res) => {
     try {
       const newsData = await getNewsData();
       res.json(newsData);
     } catch (error) {
-      console.error('News API error:', error);
-      res.status(500).json({ error: 'Failed to fetch news data' });
+      console.error("News API error:", error);
+      res.status(500).json({ error: "Failed to fetch news data" });
     }
   });
 
   // ==== PLACES API ENDPOINTS ====
   // Public endpoint for fetching active places
-  app.get('/api/places', async (req, res) => {
+  app.get("/api/places", async (req, res) => {
     try {
-      const isActive = req.query.active === 'false' ? false : true;
+      const isActive = req.query.active === "false" ? false : true;
       const places = await storage.getAllPlaces(isActive);
       res.json(places);
     } catch (error) {
-      console.error('Places fetch error:', error);
-      res.status(500).json({ error: 'Failed to fetch places' });
+      console.error("Places fetch error:", error);
+      res.status(500).json({ error: "Failed to fetch places" });
     }
   });
 
   // Public endpoint for fetching single place
-  app.get('/api/places/:id', async (req, res) => {
+  app.get("/api/places/:id", async (req, res) => {
+    const { id } = req.params;
+
+    // 1. ADD THIS VALIDATION BLOCK
+    // This checks if the ID is in a valid format before querying the database.
+    if (!Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "Invalid ID format" });
+    }
+
     try {
-      const place = await storage.getPlace(req.params.id);
+      const place = await storage.getPlace(id);
       if (!place) {
-        return res.status(404).json({ error: 'Place not found' });
+        return res.status(404).json({ error: "Place not found" });
       }
       res.json(place);
     } catch (error) {
-      console.error('Place fetch error:', error);
-      res.status(500).json({ error: 'Failed to fetch place' });
+      // This catch block will now only handle unexpected database errors,
+      // not formatting errors.
+      console.error("Place fetch error:", error);
+      res.status(500).json({ error: "Failed to fetch place" });
     }
   });
 
   // Admin endpoint for creating places
-  app.post('/api/places', authenticateAdmin, async (req, res) => {
+  app.post("/api/places", authenticateAdmin, async (req, res) => {
     try {
       const validatedData = placeValidation.parse(req.body);
       const place = await storage.createPlace(validatedData);
       res.status(201).json(place);
     } catch (error) {
-      console.error('Place creation error:', error);
-      res.status(400).json({ error: 'Failed to create place' });
+      console.error("Place creation error:", error);
+      res.status(400).json({ error: "Failed to create place" });
     }
   });
 
   // Admin endpoint for updating places
-  app.put('/api/places/:id', authenticateAdmin, async (req, res) => {
+  app.put("/api/places/:id", authenticateAdmin, async (req, res) => {
     try {
       const validatedData = placeValidation.partial().parse(req.body);
       const place = await storage.updatePlace(req.params.id, validatedData);
       if (!place) {
-        return res.status(404).json({ error: 'Place not found' });
+        return res.status(404).json({ error: "Place not found" });
       }
       res.json(place);
     } catch (error) {
-      console.error('Place update error:', error);
-      res.status(400).json({ error: 'Failed to update place' });
+      console.error("Place update error:", error);
+      res.status(400).json({ error: "Failed to update place" });
     }
   });
 
   // Admin endpoint for deleting places
-  app.delete('/api/places/:id', authenticateAdmin, async (req, res) => {
+  app.delete("/api/places/:id", authenticateAdmin, async (req, res) => {
     try {
       const deleted = await storage.deletePlace(req.params.id);
       if (!deleted) {
-        return res.status(404).json({ error: 'Place not found' });
+        return res.status(404).json({ error: "Place not found" });
       }
-      res.json({ message: 'Place deleted successfully' });
+      res.json({ message: "Place deleted successfully" });
     } catch (error) {
-      console.error('Place deletion error:', error);
-      res.status(500).json({ error: 'Failed to delete place' });
+      console.error("Place deletion error:", error);
+      res.status(500).json({ error: "Failed to delete place" });
     }
   });
 
   // ==== FOOD API ENDPOINTS ====
-  app.get('/api/food', async (req, res) => {
+  app.get("/api/food", async (req, res) => {
     try {
-      const isActive = req.query.active === 'false' ? false : true;
+      const isActive = req.query.active === "false" ? false : true;
       const food = await storage.getAllFood(isActive);
       res.json(food);
     } catch (error) {
-      console.error('Food fetch error:', error);
-      res.status(500).json({ error: 'Failed to fetch food items' });
+      console.error("Food fetch error:", error);
+      res.status(500).json({ error: "Failed to fetch food items" });
     }
   });
 
-  app.get('/api/food/:id', async (req, res) => {
+  app.get("/api/food/:id", async (req, res) => {
     try {
       const food = await storage.getFood(req.params.id);
       if (!food) {
-        return res.status(404).json({ error: 'Food item not found' });
+        return res.status(404).json({ error: "Food item not found" });
       }
       res.json(food);
     } catch (error) {
-      console.error('Food fetch error:', error);
-      res.status(500).json({ error: 'Failed to fetch food item' });
+      console.error("Food fetch error:", error);
+      res.status(500).json({ error: "Failed to fetch food item" });
     }
   });
 
-  app.post('/api/food', async (req, res) => {
+  app.post("/api/food", async (req, res) => {
     try {
       const validatedData = foodValidation.parse(req.body);
       const food = await storage.createFood(validatedData);
       res.status(201).json(food);
     } catch (error) {
-      console.error('Food creation error:', error);
-      res.status(400).json({ error: 'Failed to create food item' });
+      console.error("Food creation error:", error);
+      res.status(400).json({ error: "Failed to create food item" });
     }
   });
 
-  app.put('/api/food/:id', async (req, res) => {
+  app.put("/api/food/:id", async (req, res) => {
     try {
       const validatedData = foodValidation.partial().parse(req.body);
       const food = await storage.updateFood(req.params.id, validatedData);
       if (!food) {
-        return res.status(404).json({ error: 'Food item not found' });
+        return res.status(404).json({ error: "Food item not found" });
       }
       res.json(food);
     } catch (error) {
-      console.error('Food update error:', error);
-      res.status(400).json({ error: 'Failed to update food item' });
+      console.error("Food update error:", error);
+      res.status(400).json({ error: "Failed to update food item" });
     }
   });
 
-  app.delete('/api/food/:id', async (req, res) => {
+  app.delete("/api/food/:id", async (req, res) => {
     try {
       const deleted = await storage.deleteFood(req.params.id);
       if (!deleted) {
-        return res.status(404).json({ error: 'Food item not found' });
+        return res.status(404).json({ error: "Food item not found" });
       }
-      res.json({ message: 'Food item deleted successfully' });
+      res.json({ message: "Food item deleted successfully" });
     } catch (error) {
-      console.error('Food deletion error:', error);
-      res.status(500).json({ error: 'Failed to delete food item' });
+      console.error("Food deletion error:", error);
+      res.status(500).json({ error: "Failed to delete food item" });
     }
   });
 
   // ==== EVENTS API ENDPOINTS ====
-  app.get('/api/events', async (req, res) => {
+  app.get("/api/events", async (req, res) => {
     try {
-      const isActive = req.query.active === 'false' ? false : true;
+      const isActive = req.query.active === "false" ? false : true;
       const events = await storage.getAllEvents(isActive);
       res.json(events);
     } catch (error) {
-      console.error('Events fetch error:', error);
-      res.status(500).json({ error: 'Failed to fetch events' });
+      console.error("Events fetch error:", error);
+      res.status(500).json({ error: "Failed to fetch events" });
     }
   });
 
-  app.get('/api/events/:id', async (req, res) => {
+  app.get("/api/events/:id", async (req, res) => {
     try {
       const event = await storage.getEvent(req.params.id);
       if (!event) {
-        return res.status(404).json({ error: 'Event not found' });
+        return res.status(404).json({ error: "Event not found" });
       }
       res.json(event);
     } catch (error) {
-      console.error('Event fetch error:', error);
-      res.status(500).json({ error: 'Failed to fetch event' });
+      console.error("Event fetch error:", error);
+      res.status(500).json({ error: "Failed to fetch event" });
     }
   });
 
-  app.post('/api/events', async (req, res) => {
+  app.post("/api/events", async (req, res) => {
     try {
       const validatedData = eventValidation.parse(req.body);
       // Convert date strings to Date objects for MongoDB
       const eventData = {
         ...validatedData,
-        date: typeof validatedData.date === 'string' ? new Date(validatedData.date) : validatedData.date,
-        endDate: validatedData.endDate ? (typeof validatedData.endDate === 'string' ? new Date(validatedData.endDate) : validatedData.endDate) : undefined
+        date:
+          typeof validatedData.date === "string"
+            ? new Date(validatedData.date)
+            : validatedData.date,
+        endDate: validatedData.endDate
+          ? typeof validatedData.endDate === "string"
+            ? new Date(validatedData.endDate)
+            : validatedData.endDate
+          : undefined,
       };
       const event = await storage.createEvent(eventData);
       res.status(201).json(event);
     } catch (error) {
-      console.error('Event creation error:', error);
-      res.status(400).json({ error: 'Failed to create event' });
+      console.error("Event creation error:", error);
+      res.status(400).json({ error: "Failed to create event" });
     }
   });
 
-  app.put('/api/events/:id', async (req, res) => {
+  app.put("/api/events/:id", async (req, res) => {
     try {
       const validatedData = eventValidation.partial().parse(req.body);
       // Convert date strings to Date objects for MongoDB
       const eventData: any = { ...validatedData };
       if (validatedData.date) {
-        eventData.date = typeof validatedData.date === 'string' ? new Date(validatedData.date) : validatedData.date;
+        eventData.date =
+          typeof validatedData.date === "string"
+            ? new Date(validatedData.date)
+            : validatedData.date;
       }
       if (validatedData.endDate) {
-        eventData.endDate = typeof validatedData.endDate === 'string' ? new Date(validatedData.endDate) : validatedData.endDate;
+        eventData.endDate =
+          typeof validatedData.endDate === "string"
+            ? new Date(validatedData.endDate)
+            : validatedData.endDate;
       }
       const event = await storage.updateEvent(req.params.id, eventData);
       if (!event) {
-        return res.status(404).json({ error: 'Event not found' });
+        return res.status(404).json({ error: "Event not found" });
       }
       res.json(event);
     } catch (error) {
-      console.error('Event update error:', error);
-      res.status(400).json({ error: 'Failed to update event' });
+      console.error("Event update error:", error);
+      res.status(400).json({ error: "Failed to update event" });
     }
   });
 
-  app.delete('/api/events/:id', async (req, res) => {
+  app.delete("/api/events/:id", async (req, res) => {
     try {
       const deleted = await storage.deleteEvent(req.params.id);
       if (!deleted) {
-        return res.status(404).json({ error: 'Event not found' });
+        return res.status(404).json({ error: "Event not found" });
       }
-      res.json({ message: 'Event deleted successfully' });
+      res.json({ message: "Event deleted successfully" });
     } catch (error) {
-      console.error('Event deletion error:', error);
-      res.status(500).json({ error: 'Failed to delete event' });
+      console.error("Event deletion error:", error);
+      res.status(500).json({ error: "Failed to delete event" });
     }
   });
 
   // ==== GALLERY API ENDPOINTS ====
-  app.get('/api/gallery', async (req, res) => {
+  app.get("/api/gallery", async (req, res) => {
     try {
-      const isActive = req.query.active === 'false' ? false : true;
+      const isActive = req.query.active === "false" ? false : true;
       const gallery = await storage.getAllGallery(isActive);
       res.json(gallery);
     } catch (error) {
-      console.error('Gallery fetch error:', error);
-      res.status(500).json({ error: 'Failed to fetch gallery' });
+      console.error("Gallery fetch error:", error);
+      res.status(500).json({ error: "Failed to fetch gallery" });
     }
   });
 
-  app.get('/api/gallery/:id', async (req, res) => {
+  app.get("/api/gallery/:id", async (req, res) => {
     try {
       const item = await storage.getGalleryItem(req.params.id);
       if (!item) {
-        return res.status(404).json({ error: 'Gallery item not found' });
+        return res.status(404).json({ error: "Gallery item not found" });
       }
       res.json(item);
     } catch (error) {
-      console.error('Gallery fetch error:', error);
-      res.status(500).json({ error: 'Failed to fetch gallery item' });
+      console.error("Gallery fetch error:", error);
+      res.status(500).json({ error: "Failed to fetch gallery item" });
     }
   });
 
-  app.post('/api/gallery', async (req, res) => {
+  app.post("/api/gallery", async (req, res) => {
     try {
       const validatedData = galleryValidation.parse(req.body);
       const item = await storage.createGalleryItem(validatedData);
       res.status(201).json(item);
     } catch (error) {
-      console.error('Gallery creation error:', error);
-      res.status(400).json({ error: 'Failed to create gallery item' });
+      console.error("Gallery creation error:", error);
+      res.status(400).json({ error: "Failed to create gallery item" });
     }
   });
 
-  app.put('/api/gallery/:id', async (req, res) => {
+  app.put("/api/gallery/:id", async (req, res) => {
     try {
       const validatedData = galleryValidation.partial().parse(req.body);
-      const item = await storage.updateGalleryItem(req.params.id, validatedData);
+      const item = await storage.updateGalleryItem(
+        req.params.id,
+        validatedData
+      );
       if (!item) {
-        return res.status(404).json({ error: 'Gallery item not found' });
+        return res.status(404).json({ error: "Gallery item not found" });
       }
       res.json(item);
     } catch (error) {
-      console.error('Gallery update error:', error);
-      res.status(400).json({ error: 'Failed to update gallery item' });
+      console.error("Gallery update error:", error);
+      res.status(400).json({ error: "Failed to update gallery item" });
     }
   });
 
-  app.delete('/api/gallery/:id', async (req, res) => {
+  app.delete("/api/gallery/:id", async (req, res) => {
     try {
       const deleted = await storage.deleteGalleryItem(req.params.id);
       if (!deleted) {
-        return res.status(404).json({ error: 'Gallery item not found' });
+        return res.status(404).json({ error: "Gallery item not found" });
       }
-      res.json({ message: 'Gallery item deleted successfully' });
+      res.json({ message: "Gallery item deleted successfully" });
     } catch (error) {
-      console.error('Gallery deletion error:', error);
-      res.status(500).json({ error: 'Failed to delete gallery item' });
+      console.error("Gallery deletion error:", error);
+      res.status(500).json({ error: "Failed to delete gallery item" });
     }
   });
 
   // ==== ABOUT API ENDPOINTS ====
-  app.get('/api/about', async (req, res) => {
+  app.get("/api/about", async (req, res) => {
     try {
-      const isActive = req.query.active === 'false' ? false : true;
+      const isActive = req.query.active === "false" ? false : true;
       const about = await storage.getAllAbout(isActive);
       res.json(about);
     } catch (error) {
-      console.error('About fetch error:', error);
-      res.status(500).json({ error: 'Failed to fetch about sections' });
+      console.error("About fetch error:", error);
+      res.status(500).json({ error: "Failed to fetch about sections" });
     }
   });
 
-  app.get('/api/about/:id', async (req, res) => {
+  app.get("/api/about/:id", async (req, res) => {
     try {
       const about = await storage.getAbout(req.params.id);
       if (!about) {
-        return res.status(404).json({ error: 'About section not found' });
+        return res.status(404).json({ error: "About section not found" });
       }
       res.json(about);
     } catch (error) {
-      console.error('About fetch error:', error);
-      res.status(500).json({ error: 'Failed to fetch about section' });
+      console.error("About fetch error:", error);
+      res.status(500).json({ error: "Failed to fetch about section" });
     }
   });
 
-  app.post('/api/about', async (req, res) => {
+  app.post("/api/about", async (req, res) => {
     try {
       const validatedData = aboutValidation.parse(req.body);
       const about = await storage.createAbout(validatedData);
       res.status(201).json(about);
     } catch (error) {
-      console.error('About creation error:', error);
-      res.status(400).json({ error: 'Failed to create about section' });
+      console.error("About creation error:", error);
+      res.status(400).json({ error: "Failed to create about section" });
     }
   });
 
-  app.put('/api/about/:id', async (req, res) => {
+  app.put("/api/about/:id", async (req, res) => {
     try {
       const validatedData = aboutValidation.partial().parse(req.body);
       const about = await storage.updateAbout(req.params.id, validatedData);
       if (!about) {
-        return res.status(404).json({ error: 'About section not found' });
+        return res.status(404).json({ error: "About section not found" });
       }
       res.json(about);
     } catch (error) {
-      console.error('About update error:', error);
-      res.status(400).json({ error: 'Failed to update about section' });
+      console.error("About update error:", error);
+      res.status(400).json({ error: "Failed to update about section" });
     }
   });
 
-  app.delete('/api/about/:id', async (req, res) => {
+  app.delete("/api/about/:id", async (req, res) => {
     try {
       const deleted = await storage.deleteAbout(req.params.id);
       if (!deleted) {
-        return res.status(404).json({ error: 'About section not found' });
+        return res.status(404).json({ error: "About section not found" });
       }
-      res.json({ message: 'About section deleted successfully' });
+      res.json({ message: "About section deleted successfully" });
     } catch (error) {
-      console.error('About deletion error:', error);
-      res.status(500).json({ error: 'Failed to delete about section' });
+      console.error("About deletion error:", error);
+      res.status(500).json({ error: "Failed to delete about section" });
     }
   });
 
   // ==== CONTACT MESSAGES API ENDPOINTS ====
-  app.get('/api/contact', async (req, res) => {
+  app.get("/api/contact", async (req, res) => {
     try {
       const messages = await storage.getAllContactMessages();
       res.json(messages);
     } catch (error) {
-      console.error('Contact messages fetch error:', error);
-      res.status(500).json({ error: 'Failed to fetch contact messages' });
+      console.error("Contact messages fetch error:", error);
+      res.status(500).json({ error: "Failed to fetch contact messages" });
     }
   });
 
-  app.get('/api/contact/:id', async (req, res) => {
+  app.get("/api/contact/:id", async (req, res) => {
     try {
       const message = await storage.getContactMessage(req.params.id);
       if (!message) {
-        return res.status(404).json({ error: 'Contact message not found' });
+        return res.status(404).json({ error: "Contact message not found" });
       }
       res.json(message);
     } catch (error) {
-      console.error('Contact message fetch error:', error);
-      res.status(500).json({ error: 'Failed to fetch contact message' });
+      console.error("Contact message fetch error:", error);
+      res.status(500).json({ error: "Failed to fetch contact message" });
     }
   });
 
-  app.post('/api/contact', async (req, res) => {
+  app.post("/api/contact", async (req, res) => {
     try {
       const validatedData = contactMessageValidation.parse(req.body);
       const message = await storage.createContactMessage(validatedData);
-      res.status(201).json({ message: 'Message sent successfully', id: message._id });
+      res
+        .status(201)
+        .json({ message: "Message sent successfully", id: message._id });
     } catch (error) {
-      console.error('Contact form error:', error);
-      res.status(400).json({ error: 'Failed to send message' });
+      console.error("Contact form error:", error);
+      res.status(400).json({ error: "Failed to send message" });
     }
   });
 
-  app.patch('/api/contact/:id/read', async (req, res) => {
+  app.patch("/api/contact/:id/read", async (req, res) => {
     try {
       const updated = await storage.markMessageAsRead(req.params.id);
       if (!updated) {
-        return res.status(404).json({ error: 'Contact message not found' });
+        return res.status(404).json({ error: "Contact message not found" });
       }
-      res.json({ message: 'Message marked as read' });
+      res.json({ message: "Message marked as read" });
     } catch (error) {
-      console.error('Contact message update error:', error);
-      res.status(500).json({ error: 'Failed to update message status' });
+      console.error("Contact message update error:", error);
+      res.status(500).json({ error: "Failed to update message status" });
     }
   });
 
-  app.patch('/api/contact/:id/reply', async (req, res) => {
+  app.patch("/api/contact/:id/reply", async (req, res) => {
     try {
       const { reply } = req.body;
       if (!reply) {
-        return res.status(400).json({ error: 'Reply content is required' });
+        return res.status(400).json({ error: "Reply content is required" });
       }
-      
+
       const updated = await storage.replyToMessage(req.params.id, reply);
       if (!updated) {
-        return res.status(404).json({ error: 'Contact message not found' });
+        return res.status(404).json({ error: "Contact message not found" });
       }
-      res.json({ message: 'Reply sent successfully' });
+      res.json({ message: "Reply sent successfully" });
     } catch (error) {
-      console.error('Contact reply error:', error);
-      res.status(500).json({ error: 'Failed to send reply' });
+      console.error("Contact reply error:", error);
+      res.status(500).json({ error: "Failed to send reply" });
     }
   });
 
   // ==== SETTINGS API ENDPOINTS ====
-  app.get('/api/settings', async (req, res) => {
+  app.get("/api/settings", async (req, res) => {
     try {
       const settings = await storage.getAllSettings();
       res.json(settings);
     } catch (error) {
-      console.error('Settings fetch error:', error);
-      res.status(500).json({ error: 'Failed to fetch settings' });
+      console.error("Settings fetch error:", error);
+      res.status(500).json({ error: "Failed to fetch settings" });
     }
   });
 
-  app.get('/api/settings/:key', async (req, res) => {
+  app.get("/api/settings/:key", async (req, res) => {
     try {
       const setting = await storage.getSetting(req.params.key);
       if (!setting) {
-        return res.status(404).json({ error: 'Setting not found' });
+        return res.status(404).json({ error: "Setting not found" });
       }
       res.json(setting);
     } catch (error) {
-      console.error('Setting fetch error:', error);
-      res.status(500).json({ error: 'Failed to fetch setting' });
+      console.error("Setting fetch error:", error);
+      res.status(500).json({ error: "Failed to fetch setting" });
     }
   });
 
-  app.post('/api/settings', async (req, res) => {
+  app.post("/api/settings", async (req, res) => {
     try {
       const validatedData = settingsValidation.parse(req.body);
       const setting = await storage.createSetting(validatedData);
       res.status(201).json(setting);
     } catch (error) {
-      console.error('Setting creation error:', error);
-      res.status(400).json({ error: 'Failed to create setting' });
+      console.error("Setting creation error:", error);
+      res.status(400).json({ error: "Failed to create setting" });
     }
   });
 
-  app.put('/api/settings/:key', async (req, res) => {
+  app.put("/api/settings/:key", async (req, res) => {
     try {
       const { value } = req.body;
       if (!value) {
-        return res.status(400).json({ error: 'Setting value is required' });
+        return res.status(400).json({ error: "Setting value is required" });
       }
-      
+
       const setting = await storage.updateSetting(req.params.key, value);
       if (!setting) {
-        return res.status(404).json({ error: 'Setting not found' });
+        return res.status(404).json({ error: "Setting not found" });
       }
       res.json(setting);
     } catch (error) {
-      console.error('Setting update error:', error);
-      res.status(500).json({ error: 'Failed to update setting' });
+      console.error("Setting update error:", error);
+      res.status(500).json({ error: "Failed to update setting" });
     }
   });
 
-  app.delete('/api/settings/:key', async (req, res) => {
+  app.delete("/api/settings/:key", async (req, res) => {
     try {
       const deleted = await storage.deleteSetting(req.params.key);
       if (!deleted) {
-        return res.status(404).json({ error: 'Setting not found' });
+        return res.status(404).json({ error: "Setting not found" });
       }
-      res.json({ message: 'Setting deleted successfully' });
+      res.json({ message: "Setting deleted successfully" });
     } catch (error) {
-      console.error('Setting deletion error:', error);
-      res.status(500).json({ error: 'Failed to delete setting' });
+      console.error("Setting deletion error:", error);
+      res.status(500).json({ error: "Failed to delete setting" });
     }
   });
 
