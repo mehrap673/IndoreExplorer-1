@@ -1,14 +1,16 @@
 import { Switch, Route } from "wouter";
-import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "./lib/queryClient";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/ThemeProvider";
+
 import Home from "@/pages/Home";
 import About from "@/pages/About";
 import Contact from "@/pages/Contact";
 import Weather from "@/pages/Weather";
 import News from "@/pages/News";
 import Places from "@/pages/Places";
+import PlaceDetails from "@/pages/PlaceDetails";
 import Food from "@/pages/Food";
 import Events from "@/pages/Events";
 import Gallery from "@/pages/Gallery";
@@ -24,12 +26,16 @@ function Router() {
       <Route path="/weather" component={Weather} />
       <Route path="/news" component={News} />
       <Route path="/places" component={Places} />
+      <Route path="/place/:placeId">
+        <PlaceDetails />
+      </Route>
+
       <Route path="/food" component={Food} />
       <Route path="/events" component={Events} />
       <Route path="/gallery" component={Gallery} />
       <Route path="/admin" component={AdminApp} />
       <Route path="/admin/*" component={AdminApp} />
-      {/* Fallback to 404 */}
+      {/* Fallback route */}
       <Route component={NotFound} />
     </Switch>
   );

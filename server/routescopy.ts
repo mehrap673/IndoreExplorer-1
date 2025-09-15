@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import {
@@ -20,7 +20,9 @@ import {
   type AuthRequest,
 } from "./auth";
 import { seedDatabase } from "./seed-data";
+import { PlaceFromDB, MergedPlace, WikipediaSummary } from "./types/place";
 import { Types } from "mongoose";
+import * as cheerio from "cheerio"; // 1. Import cheerio
 
 const OPENWEATHER_API_KEY = process.env.OPENWEATHER_API_KEY || "demo_key";
 const NEWS_API_KEY = process.env.NEWS_API_KEY || "demo_key";
@@ -140,11 +142,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(result);
     } catch (error) {
       console.error("Registration error:", error);
-      res
-        .status(400)
-        .json({
-          error: error instanceof Error ? error.message : "Registration failed",
-        });
+      res.status(400).json({
+        error: error instanceof Error ? error.message : "Registration failed",
+      });
     }
   });
 
@@ -214,28 +214,175 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Public endpoint for fetching single place
-  app.get("/api/places/:id", async (req, res) => {
-    const { id } = req.params;
+  // Define the interface for the detailed Wikipedia Parse API response
+  interface WikipediaParseResponse {
+    parse?: {
+      title?: string;
+      text?: {
+        "*"?: string; // This property contains the full page HTML
+      };
+    };
+  }
 
-    // 1. ADD THIS VALIDATION BLOCK
-    // This checks if the ID is in a valid format before querying the database.
+  interface WikipediaQueryResponse {
+    query: {
+      pages: {
+        [pageId: string]: {
+          pageid?: number;
+          title: string;
+          extract?: string;
+          thumbnail?: {
+            source: string;
+            width: number;
+            height: number;
+          };
+        };
+      };
+    };
+  }
+  // Your other interfaces (PlaceFromDB, MergedPlace, etc.)
+
+  // --- Helper function to convert strings to camelCase ---
+  const toCamelCase = (str: string): string => {
+    return str
+      .replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) =>
+        index === 0 ? word.toLowerCase() : word.toUpperCase()
+      )
+      .replace(/\s+/g, "");
+  };
+
+  // --- The main extraction logic ---
+  const extractWikipediaData = (html: string, title: string) => {
+    const $ = cheerio.load(html);
+
+    // 1. Extract Summary and Aliases from the first paragraph
+    const firstParagraph = $(".mw-parser-output > p").first();
+    const summary = firstParagraph
+      .text()
+      .replace(/\s*\[\d+\]\s*/g, "")
+      .trim();
+    const aliases = firstParagraph
+      .find("b")
+      .slice(1)
+      .map((i, el) => $(el).text())
+      .get();
+
+    // 2. Extract Infobox Data
+    const infobox: { [key: string]: any } = {};
+    $(".infobox.vcard tr").each((_, element) => {
+      const labelEl = $(element).find("th");
+      const dataEl = $(element).find("td");
+      if (labelEl.length && dataEl.length) {
+        const label = labelEl.text().trim();
+        const value = dataEl
+          .text()
+          .replace(/\s*\[\d+\]\s*/g, "")
+          .trim();
+        infobox[toCamelCase(label)] = value;
+      }
+    });
+
+    // 3. Extract Main Image URL from Infobox
+    let imageUrl: string | null = null;
+    const imageSrc = $(".infobox.vcard .infobox-image img").attr("src");
+    if (imageSrc) {
+      // Convert thumbnail URL to full-size URL
+      imageUrl =
+        "https:" +
+        imageSrc
+          .replace(/\/thumb\//, "/")
+          .split("/")
+          .slice(0, -1)
+          .join("/");
+    }
+
+    // 4. Extract Gallery Images
+    const gallery: { caption: string; imageUrl: string }[] = [];
+    $("ul.gallery li.gallerybox").each((_, element) => {
+      const caption = $(element).find(".gallerytext").text().trim();
+      const imgSrc = $(element).find("img").attr("src");
+      if (imgSrc) {
+        const fullUrl =
+          "https:" +
+          imgSrc
+            .replace(/\/thumb\//, "/")
+            .split("/")
+            .slice(0, -1)
+            .join("/");
+        gallery.push({ caption, imageUrl: fullUrl });
+      }
+    });
+
+    // Construct the final JSON object
+    return {
+      title,
+      aliases,
+      summary,
+      imageUrl,
+      infobox: Object.keys(infobox).length > 0 ? infobox : null,
+      gallery: gallery.length > 0 ? gallery : null,
+    };
+  };
+
+  // --- The API Route ---
+  app.get("/api/places/:id", async (req: Request, res: Response) => {
+    const { id } = req.params;
     if (!Types.ObjectId.isValid(id)) {
       return res.status(400).json({ error: "Invalid ID format" });
     }
 
-    try {
-      const place = await storage.getPlace(id);
-      if (!place) {
-        return res.status(404).json({ error: "Place not found" });
-      }
-      res.json(place);
-    } catch (error) {
-      // This catch block will now only handle unexpected database errors,
-      // not formatting errors.
-      console.error("Place fetch error:", error);
-      res.status(500).json({ error: "Failed to fetch place" });
+    const place = (await storage.getPlace(id)) as PlaceFromDB | null;
+    if (!place) {
+      return res.status(404).json({ error: "Place not found" });
     }
+
+    let wikipediaData: any = null; // To hold our extracted data
+
+    try {
+      const wikiTitle = encodeURIComponent(place.name);
+      // Use action=parse to get the full HTML content
+      const wikiUrl = `https://en.wikipedia.org/w/api.php?action=parse&format=json&page=${wikiTitle}&prop=text&origin=*&redirects=1`;
+
+      const response = await fetch(wikiUrl);
+      if (response.ok) {
+        const wikiApiResponse = await response.json();
+        if (wikiApiResponse.parse?.text?.["*"]) {
+          const rawHtml = wikiApiResponse.parse.text["*"];
+          const pageTitle = wikiApiResponse.parse.title;
+          const pageUrl = `https://en.wikipedia.org/wiki/${encodeURIComponent(
+            pageTitle
+          )}`;
+
+          // Use our new function to parse the HTML and get structured data
+          const extractedData = extractWikipediaData(rawHtml, pageTitle);
+
+          wikipediaData = {
+            ...extractedData,
+            wikiUrl: pageUrl,
+          };
+        }
+      }
+    } catch (err) {
+      console.warn(
+        "Wikipedia fetch and parse failed for place:",
+        place.name,
+        err
+      );
+    }
+
+    // Merge database info with the newly scraped Wikipedia data
+    const mergedPlace = {
+      ...place, // Your original place data from the DB
+      wikipedia: wikipediaData || {
+        // Fallback if scraping fails
+        title: place.name,
+        extract: place.description,
+        wikiUrl: null,
+        wikiImage: place.imageUrl || null,
+      },
+    };
+
+    res.json(mergedPlace);
   });
 
   // Admin endpoint for creating places

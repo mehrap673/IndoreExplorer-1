@@ -35,6 +35,8 @@ IndoreExplorer-1/
 5.Seed sample data (if available): node seed-data.js
 6.Start backend & frontend: npm run dev
 7.Access app at localhost
+
+
 🌐 Environment Variables
 MONGO_URI: Database connection string
 JWT_SECRET: Secret for JWT authentication
